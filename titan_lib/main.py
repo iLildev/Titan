@@ -3,8 +3,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 TOKEN = "8777730506:AAEYUvf2XJa5l3QxE2h4QWnCdD31KoXDb4M"
 BOT_USERNAME = "Payfix_406Bot"
+CHANNEL_USERNAME = "AjrPlusBot"
 
-LAST_POST = "https://t.me/AjrPlusBot/1"
+last_post: str | None = None
 
 bot = Titan(TOKEN)
 
@@ -34,12 +35,13 @@ async def on_bot_added(ctx):
         return
 
     # -------------------------
-    # رسالة 1: رابط فقط
+    # رسالة 1: رابط آخر منشور
     # -------------------------
-    await ctx.api.send_message(
-        chat_id=chat_id,
-        text=LAST_POST
-    )
+    if last_post:
+        await ctx.api.send_message(
+            chat_id=chat_id,
+            text=last_post
+        )
 
     # -------------------------
     # هل تمت إضافته كمشرف؟
@@ -77,6 +79,19 @@ async def on_bot_added(ctx):
         parse_mode="Markdown",
         reply_markup=keyboard
     )
+
+
+@bot.channel_post()
+async def on_channel_post(ctx):
+    global last_post
+    post = ctx.update.channel_post
+    if not post:
+        return
+    chat = post.get("chat", {})
+    username = chat.get("username", "")
+    message_id = post.get("message_id")
+    if username and message_id:
+        last_post = f"https://t.me/{username}/{message_id}"
 
 
 bot.run(debug=True)

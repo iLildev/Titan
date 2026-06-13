@@ -25,6 +25,7 @@ class Update:
     def __init__(self, raw: dict[str, Any]) -> None:
         self.raw = raw
         self.message = raw.get("message")
+        self.channel_post = raw.get("channel_post")
         self.callback_query = raw.get("callback_query")
 
     # -------------------------

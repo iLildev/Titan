@@ -43,6 +43,7 @@ class Titan:
 
         self.commands: dict[str, Handler] = {}
         self.messages: list[Handler] = []
+        self.channel_posts: list[Handler] = []
 
         self.offset: int = 0
 
@@ -65,11 +66,26 @@ class Titan:
         return decorator
 
     # -------------------------
+    # تسجيل منشورات القناة
+    # -------------------------
+    def channel_post(self):
+        def decorator(func: Handler):
+            self.channel_posts.append(func)
+            return func
+        return decorator
+
+    # -------------------------
     # معالجة التحديث
     # -------------------------
     async def _handle_update(self, raw_update: dict[str, Any]) -> None:
         update = Update(raw_update)
         ctx = Context(update, self.api)
+
+        # منشور قناة
+        if "channel_post" in raw_update:
+            for handler in self.channel_posts:
+                await handler(ctx)
+            return
 
         text = update.text
 

@@ -88,16 +88,24 @@ class Telegram:
         self,
         chat_id: int,
         text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
     ) -> dict[str, Any]:
         """إرسال رسالة نصية."""
 
-        return await self.request(
-            "sendMessage",
-            {
-                "chat_id": chat_id,
-                "text": text,
-            },
-        )
+        data: dict[str, Any] = {"chat_id": chat_id, "text": text}
+
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+
+        if reply_markup is not None:
+            data["reply_markup"] = (
+                reply_markup.to_dict()
+                if hasattr(reply_markup, "to_dict")
+                else reply_markup
+            )
+
+        return await self.request("sendMessage", data)
 
     async def delete_message(
         self,
