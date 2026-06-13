@@ -1,0 +1,82 @@
+from titan.bot import Titan
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+TOKEN = "8777730506:AAEYUvf2XJa5l3QxE2h4QWnCdD31KoXDb4M"
+BOT_USERNAME = "@Payfix_406Bot"
+
+LAST_POST = "https://t.me/AjrPlusBot/1"
+
+bot = Titan(TOKEN)
+
+
+def user_mention(name: str, user_id: int) -> str:
+    return f"[{name}](tg://user?id={user_id})"
+
+
+@bot.message()
+async def on_bot_added(ctx):
+    msg = ctx.update.raw.get("message", {})
+    new_members = msg.get("new_chat_members", [])
+
+    if not new_members:
+        return
+
+    # هل البوت نفسه تم إضافته؟
+    bot_added = any(
+        m.get("username") == BOT_USERNAME for m in new_members
+    )
+
+    if not bot_added:
+        return
+
+    chat_id = ctx.chat_id
+    if not chat_id:
+        return
+
+    # -------------------------
+    # رسالة 1: رابط فقط
+    # -------------------------
+    await ctx.api.send_message(
+        chat_id=chat_id,
+        text=LAST_POST
+    )
+
+    # -------------------------
+    # هل تمت إضافته كمشرف؟
+    # (نستخدم أول من أضافه كمرجع)
+    # -------------------------
+    adder = msg.get("from", {})
+    adder_name = adder.get("first_name", "Unknown")
+    adder_id = adder.get("id")
+
+    is_admin_action = msg.get("new_chat_members")
+
+    # Telegram لا يفرّق هنا بشكل مباشر بين عضو/مشرف في هذا الحدث
+    # لذلك نعتمد على chat_member في حالات متقدمة (حالياً نبسطها)
+    # ونفترض: إذا كان هناك from → نعرض رسالة التفعيل دائماً عند الإضافة
+
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                "الاوامر",
+                url=f"https://t.me/{BOT_USERNAME}?start=Commands"
+            )
+        ]
+    ])
+
+    # -------------------------
+    # رسالة 2 (تفعيل + من أضاف البوت)
+    # -------------------------
+    await ctx.api.send_message(
+        chat_id=chat_id,
+        text=(
+            f"⇜ من 「{user_mention(adder_name, adder_id)}」\n"
+            f"⇜ تم تفعيل المجموعة تلقائياً\n"
+            "༄"
+        ),
+        parse_mode="Markdown",
+        reply_markup=keyboard
+    )
+
+
+bot.run(debug=True)
