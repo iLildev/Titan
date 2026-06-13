@@ -33,17 +33,28 @@ class Update:
     # -------------------------
 
     def _msg(self):
-        return self.message
+        """
+        إرجاع الكائن الأساسي للتحديث.
+
+        يدعم:
+        - message
+        - channel_post
+
+        ويمكن توسيعه مستقبلاً لأنواع أخرى.
+        """
+        return self.message or self.channel_post
 
     def _chat(self):
-        if not self.message:
+        msg = self._msg()
+        if not msg:
             return None
-        return self.message.get("chat")
+        return msg.get("chat")
 
     def _user(self):
-        if not self.message:
+        msg = self._msg()
+        if not msg:
             return None
-        return self.message.get("from")
+        return msg.get("from")
 
     # -------------------------
     # معلومات الرسالة
@@ -93,6 +104,9 @@ class Update:
 
     def is_message(self) -> bool:
         return self.message is not None
+
+    def is_channel_post(self) -> bool:
+        return self.channel_post is not None
 
     def has_text(self) -> bool:
         return self.text is not None
