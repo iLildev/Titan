@@ -2,7 +2,7 @@ from titan.bot import Titan
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 TOKEN = "8777730506:AAEYUvf2XJa5l3QxE2h4QWnCdD31KoXDb4M"
-BOT_USERNAME = "@Payfix_406Bot"
+BOT_USERNAME = "Payfix_406Bot"
 
 LAST_POST = "https://t.me/AjrPlusBot/1"
 
