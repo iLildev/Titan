@@ -1,0 +1,104 @@
+"""
+titan.update
+
+تحويل بيانات Telegram Update الخام إلى شكل مبسط
+يمكن لبقية Titan استخدامه بسهولة.
+
+هذا الملف لا يحتوي على أي منطق للبوت.
+فقط استخراج بيانات.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+class Update:
+    """
+    تمثيل مبسط لرسالة Telegram Update.
+
+    الهدف:
+    إزالة التعقيد من بنية JSON القادمة من Telegram
+    وتحويلها إلى واجهة واضحة وسهلة الاستخدام.
+    """
+
+    def __init__(self, raw: dict[str, Any]) -> None:
+        self.raw = raw
+        self.message = raw.get("message")
+        self.callback_query = raw.get("callback_query")
+
+    # -------------------------
+    # Helpers داخلية
+    # -------------------------
+
+    def _msg(self):
+        return self.message
+
+    def _chat(self):
+        if not self.message:
+            return None
+        return self.message.get("chat")
+
+    def _user(self):
+        if not self.message:
+            return None
+        return self.message.get("from")
+
+    # -------------------------
+    # معلومات الرسالة
+    # -------------------------
+
+    @property
+    def text(self) -> str | None:
+        msg = self._msg()
+        return msg.get("text") if msg else None
+
+    @property
+    def message_id(self) -> int | None:
+        msg = self._msg()
+        return msg.get("message_id") if msg else None
+
+    # -------------------------
+    # معلومات المستخدم
+    # -------------------------
+
+    @property
+    def user_id(self) -> int | None:
+        user = self._user()
+        return user.get("id") if user else None
+
+    @property
+    def username(self) -> str | None:
+        user = self._user()
+        return user.get("username") if user else None
+
+    # -------------------------
+    # معلومات الشات
+    # -------------------------
+
+    @property
+    def chat_id(self) -> int | None:
+        chat = self._chat()
+        return chat.get("id") if chat else None
+
+    @property
+    def chat_type(self) -> str | None:
+        chat = self._chat()
+        return chat.get("type") if chat else None
+
+    # -------------------------
+    # أدوات مساعدة
+    # -------------------------
+
+    def is_message(self) -> bool:
+        return self.message is not None
+
+    def has_text(self) -> bool:
+        return self.text is not None
+
+    # -------------------------
+    # تصدير داخلي
+    # -------------------------
+
+    def to_dict(self) -> dict[str, Any]:
+        return self.raw
