@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "python-3.11"]
 
 [deployment]
 router = "application"
@@ -24,12 +24,12 @@ args = "Titan Library"
 name = "Titan Library"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo '✓ Titan library workspace is ready.' && find titan_lib/ -type f | sort"
-
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 titan_lib/main.py"
 
 [agent]
 stack = "PNPM_WORKSPACE"
