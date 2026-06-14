@@ -1,3 +1,38 @@
+Metadata-Version: 2.4
+Name: titan-tg
+Version: 0.1.0
+Summary: A modern, extensible Telegram bot framework and CLI — the package manager of Telegram bots.
+Author-email: WaheedFox <waheedfox@users.noreply.github.com>
+License: TITAN CUSTOM LICENSE
+        Version 1.0 — Placeholder
+        
+        This license is reserved for the author (WaheedFox).
+        A custom license text will be placed here.
+        
+        Until then, all rights are reserved by the author.
+        Unauthorized redistribution or commercial use is prohibited without explicit permission.
+        
+Project-URL: Homepage, https://github.com/WaheedFox/titan
+Project-URL: Repository, https://github.com/WaheedFox/titan
+Project-URL: Bug Tracker, https://github.com/WaheedFox/titan/issues
+Keywords: telegram,bot,framework,cli,async
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Communications :: Chat
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aiohttp>=3.9
+Requires-Dist: click>=8.1
+Requires-Dist: rich>=13.0
+Requires-Dist: httpx>=0.27
+Dynamic: license-file
+
 # Titan
 
 > The package manager for Telegram bots.
