@@ -9,26 +9,20 @@ from rich.live import Live
 
 console = Console()
 
-REGISTRY_URL = (
-    "https://raw.githubusercontent.com/WaheedFox/titan-registry/main/index.json"
-)
-
-# Bundled fallback — lives inside the titan package itself
-_BUNDLED = Path(__file__).parent.parent.parent / "registry" / "index.json"
+REGISTRY_URL = "https://raw.githubusercontent.com/WaheedFox/titan-registry/main/index.json"
+_BUNDLED_REGISTRY = Path(__file__).parent.parent.parent / "registry" / "index.json"
 
 
 def _load_registry() -> dict:
-    # Try remote first
     try:
-        r = httpx.get(REGISTRY_URL, timeout=8)
-        r.raise_for_status()
-        return r.json()
+        response = httpx.get(REGISTRY_URL, timeout=8)
+        response.raise_for_status()
+        return response.json()
     except Exception:
         pass
 
-    # Fallback to bundled registry shipped with the package
     try:
-        return json.loads(_BUNDLED.read_text())
+        return json.loads(_BUNDLED_REGISTRY.read_text())
     except Exception:
         return {}
 
@@ -50,13 +44,7 @@ def list_tools(kind: str | None):
         console.print("[yellow]No tools found.[/yellow]")
         return
 
-    table = Table(
-        show_header=True,
-        header_style="bold cyan",
-        border_style="dim",
-        expand=False,
-    )
-
+    table = Table(show_header=True, header_style="bold cyan", border_style="dim", expand=False)
     table.add_column("Name", style="bold white", no_wrap=True)
     table.add_column("Type", style="cyan", no_wrap=True)
     table.add_column("Author", style="dim", no_wrap=True)

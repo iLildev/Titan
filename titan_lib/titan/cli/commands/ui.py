@@ -4,17 +4,11 @@ from pathlib import Path
 import click
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import (
-    Header,
-    Footer,
-    DataTable,
-    Static,
-    Label,
-)
+from textual.widgets import Header, Footer, DataTable, Static, Label
 from textual.containers import Vertical, Horizontal
 from textual.screen import Screen
 
-_BUNDLED = Path(__file__).parent.parent.parent / "registry" / "index.json"
+_BUNDLED_REGISTRY = Path(__file__).parent.parent.parent / "registry" / "index.json"
 
 BANNER = """\
  ████████╗██╗████████╗ █████╗ ███╗   ██╗
@@ -28,15 +22,13 @@ BANNER = """\
 
 def _load_tools() -> list[dict]:
     try:
-        return json.loads(_BUNDLED.read_text()).get("tools", [])
+        return json.loads(_BUNDLED_REGISTRY.read_text()).get("tools", [])
     except Exception:
         return []
 
 
 class ToolsScreen(Screen):
-    BINDINGS = [
-        Binding("q", "app.pop_screen", "Back"),
-    ]
+    BINDINGS = [Binding("q", "app.pop_screen", "Back")]
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -88,37 +80,13 @@ class HomeScreen(Screen):
 class TitanApp(App):
     CSS = """
     Screen { background: #0d0d0d; }
-
-    #home {
-        align: center middle;
-        height: 100%;
-        padding: 2 4;
-    }
-
-    #banner {
-        color: #00aaff;
-        text-align: center;
-        padding-bottom: 1;
-    }
-
-    #tagline {
-        color: #888888;
-        text-align: center;
-        padding-bottom: 2;
-    }
-
-    #shortcuts {
-        width: auto;
-        align: center middle;
-        gap: 6;
-    }
-
+    #home { align: center middle; height: 100%; padding: 2 4; }
+    #banner { color: #00aaff; text-align: center; padding-bottom: 1; }
+    #tagline { color: #888888; text-align: center; padding-bottom: 2; }
+    #shortcuts { width: auto; align: center middle; gap: 6; }
     #keys { color: #ffffff; }
     #cmds { color: #555555; }
-
-    DataTable {
-        height: 1fr;
-    }
+    DataTable { height: 1fr; }
     """
 
     SCREENS = {"tools": ToolsScreen}

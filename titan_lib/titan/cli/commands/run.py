@@ -19,22 +19,18 @@ def run(file: str, debug: bool):
 
     console.print(Rule(f"[bold cyan]titan run[/bold cyan] [dim]{file}[/dim]"))
 
-    env_flags = ["--debug"] if debug else []
+    flags = ["--debug"] if debug else []
 
     while True:
         try:
-            result = subprocess.run(
-                [sys.executable, file] + env_flags,
-                check=False,
-            )
+            result = subprocess.run([sys.executable, file] + flags, check=False)
 
             if result.returncode == 0:
                 console.print("\n[dim]Bot exited cleanly.[/dim]")
                 break
 
             console.print(
-                f"\n[yellow]⚠ Bot crashed (exit {result.returncode}). "
-                f"Restarting...[/yellow]\n"
+                f"\n[yellow]⚠ Bot crashed (exit {result.returncode}). Restarting...[/yellow]\n"
             )
 
         except KeyboardInterrupt:

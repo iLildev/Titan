@@ -1,12 +1,10 @@
 import click
-from rich.console import Console
 from titan.cli.commands.init import init
 from titan.cli.commands.run import run
 from titan.cli.commands.add import add
 from titan.cli.commands.list import list_tools
 from titan.cli.commands.ui import ui
 
-console = Console()
 
 @click.group()
 @click.version_option("0.1.0", prog_name="titan")
@@ -18,6 +16,7 @@ def cli():
     Build, extend, and share Telegram bots with a single tool.
     Community tools at: https://github.com/WaheedFox/titan-registry
     """
+
 
 cli.add_command(init)
 cli.add_command(run)
