@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "titan-tg"
+version = "0.1.0"
+description = "A modern, extensible Telegram bot framework and CLI — the package manager of Telegram bots."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "WaheedFox", github = "https://github.com/WaheedFox" }]
+keywords = ["telegram", "bot", "framework", "cli", "async"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.9",
+    "click>=8.1",
+    "rich>=13.0",
+    "httpx>=0.27",
+]
+
+[project.urls]
+Homepage = "https://github.com/WaheedFox/titan"
+Repository = "https://github.com/WaheedFox/titan"
+"Bug Tracker" = "https://github.com/WaheedFox/titan/issues"
+
+[project.scripts]
+titan = "titan.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["titan*"]
