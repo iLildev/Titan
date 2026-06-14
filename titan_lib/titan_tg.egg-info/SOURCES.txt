@@ -13,6 +13,7 @@ titan/cli/commands/add.py
 titan/cli/commands/init.py
 titan/cli/commands/list.py
 titan/cli/commands/run.py
+titan/cli/commands/ui.py
 titan/filters/text.py
 titan/handlers/commands.py
 titan/handlers/messages.py

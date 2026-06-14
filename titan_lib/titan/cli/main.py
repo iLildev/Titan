@@ -4,6 +4,7 @@ from titan.cli.commands.init import init
 from titan.cli.commands.run import run
 from titan.cli.commands.add import add
 from titan.cli.commands.list import list_tools
+from titan.cli.commands.ui import ui
 
 console = Console()
 
@@ -22,3 +23,4 @@ cli.add_command(init)
 cli.add_command(run)
 cli.add_command(add)
 cli.add_command(list_tools, name="list")
+cli.add_command(ui)

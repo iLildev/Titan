@@ -31,6 +31,7 @@ Requires-Dist: aiohttp>=3.9
 Requires-Dist: click>=8.1
 Requires-Dist: rich>=13.0
 Requires-Dist: httpx>=0.27
+Requires-Dist: textual>=0.50
 Dynamic: license-file
 
 # Titan
