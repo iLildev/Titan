@@ -1,5 +1,0 @@
-aiohttp>=3.9
-click>=8.1
-rich>=13.0
-httpx>=0.27
-textual>=0.50
