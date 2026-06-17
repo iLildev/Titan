@@ -63,6 +63,16 @@ class Context:
     def message_id(self) -> int | None:
         return self.update.message_id
 
+    @property
+    def callback_data(self) -> str | None:
+        """
+        Returns callback data string from callback_query events.
+        """
+        cb = self.update.callback_query
+        if not cb:
+            return None
+        return cb.get("data")
+
     # -------------------------
     # Actions
     # -------------------------
