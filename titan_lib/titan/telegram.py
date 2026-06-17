@@ -5,13 +5,16 @@
 لا يحتوي على أوامر أو فلاتر أو منطق البوت.
 """
 
-from future import annotations
+from __future__ import annotations
 
 from typing import Any
 
 import aiohttp
 
-class TelegramError(Exception):
+from titan.errors import TitanError
+
+
+class TelegramError(TitanError):
     """خطأ صادر من Telegram API."""
     pass
 
