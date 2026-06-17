@@ -42,8 +42,7 @@ class Titan:
         self.api = Telegram(token)  
 
         self.commands: dict[str, Handler] = {}  
-        self.messages: list[Handler] = []  
-        self.channel_posts: list[Handler] = []  
+        self.handlers: dict[str, list[Handler]] = {}  
 
         self.offset: int = 0  
 
@@ -71,23 +70,38 @@ class Titan:
     # -------------------------  
     # Registration  
     # -------------------------  
+    def on(self, event: str):  
+        """  
+        تسجيل handler لحدث معين.  
+
+        يدعم أي اسم حدث:  
+        - "message"  
+        - "channel_post"  
+        - "callback"  
+        - أي حدث مستقبلي  
+        """  
+
+        def decorator(func: Handler):  
+            self.handlers.setdefault(event, []).append(func)  
+            return func  
+        return decorator  
+
     def command(self, name: str):  
+        """تسجيل أمر محدد مثل /start أو /help."""  
+
         def decorator(func: Handler):  
             self.commands[name] = func  
             return func  
         return decorator  
 
-    def message(self):  
-        def decorator(func: Handler):  
-            self.messages.append(func)  
-            return func  
-        return decorator  
+    # -------------------------  
+    # Dispatch  
+    # -------------------------  
+    async def _dispatch(self, event: str, ctx: Context) -> None:  
+        """تشغيل جميع الـ handlers المسجلة لحدث معين."""  
 
-    def channel_post(self):  
-        def decorator(func: Handler):  
-            self.channel_posts.append(func)  
-            return func  
-        return decorator  
+        for handler in self.handlers.get(event, []):  
+            await handler(ctx)  
 
     # -------------------------  
     # Update handling  
@@ -96,32 +110,27 @@ class Titan:
         update = Update(raw_update)  
         ctx = Context(update, self.api)  
 
-        # channel post  
+        # channel_post  
         if update.channel_post is not None:  
-            for handler in self.channel_posts:  
-                await handler(ctx)  
+            await self._dispatch("channel_post", ctx)  
+            return  
+
+        # callback_query  
+        if update.callback_query is not None:  
+            await self._dispatch("callback", ctx)  
             return  
 
         # message / command  
         text = update.text  
-        if text is None:  
-            for handler in self.messages:  
+        command = self._extract_command(text) if text else None  
+
+        if command is not None:  
+            handler = self.commands.get(command)  
+            if handler is not None:  
                 await handler(ctx)  
-            return  
+                return  
 
-        command = self._extract_command(text)  
-        if command is None:  
-            for handler in self.messages:  
-                await handler(ctx)  
-            return  
-
-        handler = self.commands.get(command)  
-        if handler is not None:  
-            await handler(ctx)  
-            return  
-
-        for handler in self.messages:  
-            await handler(ctx)  
+        await self._dispatch("message", ctx)  
 
     # -------------------------  
     # Runtime  
@@ -158,4 +167,4 @@ class Titan:
     # Entry point  
     # -------------------------  
     def run(self, debug: bool = False) -> None:  
-        asyncio.run(self.run_async(debug=debug))
+        asyncio.run(self.run_async(debug=debug))  
