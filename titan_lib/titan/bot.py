@@ -110,9 +110,9 @@ class Titan:
         update = Update(raw_update)  
         ctx = Context(update, self.api)  
 
-        # channel_post  
+        # channel  
         if update.channel_post is not None:  
-            await self._dispatch("channel_post", ctx)  
+            await self._dispatch("channel", ctx)  
             return  
 
         # callback_query  
