@@ -132,19 +132,23 @@ class Titan:
 
         try:  
             while True:  
-                updates = await self.api.get_updates(  
-                    offset=self.offset + 1  
-                )  
+                try:  
+                    updates = await self.api.get_updates(  
+                        offset=self.offset + 1  
+                    )  
 
-                for raw in updates:  
-                    self.offset = raw["update_id"]  
+                    for raw in updates:  
+                        self.offset = raw["update_id"]  
 
-                    if debug:  
-                        self.log(f"update received: {raw}")  
+                        if debug:  
+                            self.log(f"update received: {raw}")  
 
-                    await self._handle_update(raw)  
+                        await self._handle_update(raw)  
 
-                await asyncio.sleep(0.2)  
+                except Exception as e:  
+                    self.log(f"Polling error: {e}")  
+
+                # no sleep needed (long polling handles waiting)  
 
         finally:  
             self.log("Bot stopped")  
