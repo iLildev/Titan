@@ -1,9 +1,10 @@
+import os
 from titan.bot import Titan
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-TOKEN = "8777730506:AAEYUvf2XJa5l3QxE2h4QWnCdD31KoXDb4M"
-BOT_USERNAME = "Payfix_406Bot"
-CHANNEL_USERNAME = "AjrPlusBot"
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+BOT_USERNAME = os.environ.get("BOT_USERNAME", "Payfix_406Bot")
+CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "AjrPlusBot")
 
 last_post: str | None = None
 
