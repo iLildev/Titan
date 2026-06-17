@@ -66,11 +66,13 @@ class Context:
     @property
     def callback_data(self) -> str | None:
         """
-        Returns callback data string from callback_query events.
+        بيانات الزر المضغوط في callback_query.
         """
+
         cb = self.update.callback_query
         if not cb:
             return None
+
         return cb.get("data")
 
     # -------------------------
@@ -123,6 +125,28 @@ class Context:
         return await self.api.ban_user(
             chat_id=chat_id,
             user_id=target_user,
+        )
+
+    async def answer_callback(
+        self,
+        text: str | None = None,
+        show_alert: bool = False,
+    ) -> Any:
+        """
+        إغلاق حالة التحميل الخاصة بأزرار callback.
+        """
+
+        cb = self.update.callback_query
+        if not cb:
+            return None
+
+        return await self.api.request(
+            "answerCallbackQuery",
+            {
+                "callback_query_id": cb.get("id"),
+                "text": text,
+                "show_alert": show_alert,
+            },
         )
 
     # -------------------------
