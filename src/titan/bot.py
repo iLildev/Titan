@@ -200,7 +200,8 @@ class Titan:
     # -------------------------
     # Runtime
     # -------------------------
-    async def run_async(self, debug: bool = False) -> None:
+    async def run_async(self, debug: bool = False, offset: int = 0) -> None:
+        self.offset = offset
         await self.api.start()
         self.log("Bot started")
 
@@ -245,5 +246,5 @@ class Titan:
     # -------------------------
     # Entry point
     # -------------------------
-    def run(self, debug: bool = False) -> None:
-        asyncio.run(self.run_async(debug=debug))
+    def run(self, debug: bool = False, offset: int = 0) -> None:
+        asyncio.run(self.run_async(debug=debug, offset=offset))
