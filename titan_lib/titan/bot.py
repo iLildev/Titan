@@ -141,7 +141,9 @@ class Titan:
 
         # warm-up اختياري: تحميل معلومات البوت مسبقاً لتسريع أول استخدام  
         try:  
-            await self.api.get_me()  
+            me = await self.api.get_me()  
+            username = me.get("username", "unknown")  
+            self.log(f"Running as @{username}")  
         except Exception:  
             pass  
 
