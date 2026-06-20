@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from titan.errors import TitanError
 from titan.telegram import Telegram
 from titan.update import Update
 from titan.models.sender import Sender
@@ -172,8 +173,20 @@ class Context:
         reply_markup: Any | None = None,
     ) -> Any:
         """
-        تعديل نص الرسالة الحالية.
+        تعديل نص رسالة البوت في callback handler.
+
+        تعمل فقط داخل @bot.on("callback") أو @bot.callback("data")
+        لأن message_id في هذا السياق يشير لرسالة البوت نفسه.
+
+        لتحرير رسالة أرسلها البوت في سياقات أخرى، استخدم
+        return value من ctx.send() — سيُدعم في نسخة قادمة.
         """
+
+        if self.update.callback_query is None:
+            raise TitanError(
+                "ctx.edit() can only be used inside a callback handler. "
+                "Use ctx.reply() or ctx.send() to send a new message instead."
+            )
 
         chat_id = self.chat_id
         message_id = self.message_id
