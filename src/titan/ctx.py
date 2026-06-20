@@ -114,7 +114,7 @@ class Context:
         reply_markup: Any | None = None,
     ) -> Any:
         """
-        إرسال رسالة في نفس الشات.
+        رد حقيقي على رسالة المستخدم (reply_to_message_id).
 
         المعاملات:
         - text: نص الرسالة
@@ -122,8 +122,36 @@ class Context:
         - reply_markup: InlineKeyboard أو أي markup آخر (اختياري)
 
         مثال:
-            kb = InlineKeyboard().add("نعم", callback_data="yes")
+            await ctx.reply("مرحباً!")
             await ctx.reply("اختر:", reply_markup=kb)
+        """
+
+        chat_id = self.chat_id
+        if chat_id is None:
+            return None
+
+        return await self.api.send_message(
+            chat_id=chat_id,
+            text=text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+            reply_to_message_id=self.message_id,
+        )
+
+    async def send(
+        self,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+    ) -> Any:
+        """
+        إرسال رسالة جديدة في الشات بدون ربطها برسالة المستخدم.
+
+        استخدم هذا عندما لا تريد رداً مباشراً، مثل إرسال إشعار
+        أو رسالة مستقلة.
+
+        مثال:
+            await ctx.send("تم تسجيلك ✅")
         """
 
         chat_id = self.chat_id

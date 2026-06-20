@@ -21,204 +21,208 @@ class TelegramError(TitanError):
 class Telegram:
     """واجهة بسيطة للتعامل مع Telegram Bot API."""
 
-    def __init__(self, token: str) -> None:  
-        self.token = token  
-        self.base_url = f"https://api.telegram.org/bot{token}"  
-        self.session: aiohttp.ClientSession | None = None  
-        self._me: dict[str, Any] | None = None  
+    def __init__(self, token: str) -> None:
+        self.token = token
+        self.base_url = f"https://api.telegram.org/bot{token}"
+        self.session: aiohttp.ClientSession | None = None
+        self._me: dict[str, Any] | None = None
 
-    async def start(self) -> None:  
-        """إنشاء جلسة HTTP إذا لم تكن موجودة."""  
-        if self.session is None:  
-            self.session = aiohttp.ClientSession()  
+    async def start(self) -> None:
+        """إنشاء جلسة HTTP إذا لم تكن موجودة."""
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
 
-    async def close(self) -> None:  
-        """إغلاق الجلسة عند إيقاف البوت."""  
-        if self.session is not None:  
-            await self.session.close()  
-            self.session = None  
+    async def close(self) -> None:
+        """إغلاق الجلسة عند إيقاف البوت."""
+        if self.session is not None:
+            await self.session.close()
+            self.session = None
 
-    async def request(  
-        self,  
-        method: str,  
-        data: dict[str, Any] | None = None,  
-    ) -> dict[str, Any]:  
-        """  
-        إرسال طلب إلى Telegram API.  
-        """  
+    async def request(
+        self,
+        method: str,
+        data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """
+        إرسال طلب إلى Telegram API.
+        """
 
-        if self.session is None:  
-            raise TelegramError("Telegram session is not started.")  
+        if self.session is None:
+            raise TelegramError("Telegram session is not started.")
 
-        url = f"{self.base_url}/{method}"  
+        url = f"{self.base_url}/{method}"
 
-        async with self.session.post(url, json=data or {}) as response:  
-            try:  
-                result: dict[str, Any] = await response.json()  
-            except Exception:  
-                raise TelegramError("Invalid JSON response from Telegram")  
+        async with self.session.post(url, json=data or {}) as response:
+            try:
+                result: dict[str, Any] = await response.json()
+            except Exception:
+                raise TelegramError("Invalid JSON response from Telegram")
 
-            if not result.get("ok"):  
-                raise TelegramError(  
-                    result.get("description", "Unknown Telegram error.")  
-                )  
+            if not result.get("ok"):
+                raise TelegramError(
+                    result.get("description", "Unknown Telegram error.")
+                )
 
-            return result  
+            return result
 
-    async def get_me(self) -> dict[str, Any]:  
-        """جلب معلومات البوت. النتيجة محفوظة في الذاكرة بعد أول استدعاء."""  
+    async def get_me(self) -> dict[str, Any]:
+        """جلب معلومات البوت. النتيجة محفوظة في الذاكرة بعد أول استدعاء."""
 
-        if self._me is None:  
-            result = await self.request("getMe")  
-            self._me = result.get("result", {})  
+        if self._me is None:
+            result = await self.request("getMe")
+            self._me = result.get("result", {})
 
-        return self._me  
+        return self._me
 
-    async def get_updates(  
-        self,  
-        offset: int = 0,  
-        timeout: int = 30,  
-    ) -> list[dict[str, Any]]:  
-        """  
-        جلب التحديثات الجديدة باستخدام Long Polling.  
-        """  
+    async def get_updates(
+        self,
+        offset: int = 0,
+        timeout: int = 30,
+    ) -> list[dict[str, Any]]:
+        """
+        جلب التحديثات الجديدة باستخدام Long Polling.
+        """
 
-        result = await self.request(  
-            "getUpdates",  
-            {  
-                "offset": offset,  
-                "timeout": timeout,  
-            },  
-        )  
+        result = await self.request(
+            "getUpdates",
+            {
+                "offset": offset,
+                "timeout": timeout,
+            },
+        )
 
-        return result.get("result", [])  
+        return result.get("result", [])
 
-    async def send_message(  
-        self,  
-        chat_id: int,  
-        text: str,  
-        parse_mode: str | None = None,  
-        reply_markup: Any | None = None,  
-    ) -> dict[str, Any]:  
-        """إرسال رسالة نصية."""  
+    async def send_message(
+        self,
+        chat_id: int,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+        reply_to_message_id: int | None = None,
+    ) -> dict[str, Any]:
+        """إرسال رسالة نصية."""
 
-        data: dict[str, Any] = {  
-            "chat_id": chat_id,  
-            "text": text,  
-        }  
+        data: dict[str, Any] = {
+            "chat_id": chat_id,
+            "text": text,
+        }
 
-        if parse_mode is not None:  
-            data["parse_mode"] = parse_mode  
+        if parse_mode is not None:
+            data["parse_mode"] = parse_mode
 
-        if reply_markup is not None:  
-            data["reply_markup"] = (  
-                reply_markup.to_dict()  
-                if hasattr(reply_markup, "to_dict")  
-                else reply_markup  
-            )  
+        if reply_markup is not None:
+            data["reply_markup"] = (
+                reply_markup.to_dict()
+                if hasattr(reply_markup, "to_dict")
+                else reply_markup
+            )
 
-        return await self.request("sendMessage", data)  
+        if reply_to_message_id is not None:
+            data["reply_parameters"] = {"message_id": reply_to_message_id}
 
-    async def edit_message_text(  
-        self,  
-        chat_id: int,  
-        message_id: int,  
-        text: str,  
-        parse_mode: str | None = None,  
-        reply_markup: Any | None = None,  
-    ) -> dict[str, Any]:  
-        """تعديل نص رسالة موجودة."""  
+        return await self.request("sendMessage", data)
 
-        data: dict[str, Any] = {  
-            "chat_id": chat_id,  
-            "message_id": message_id,  
-            "text": text,  
-        }  
+    async def edit_message_text(
+        self,
+        chat_id: int,
+        message_id: int,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+    ) -> dict[str, Any]:
+        """تعديل نص رسالة موجودة."""
 
-        if parse_mode is not None:  
-            data["parse_mode"] = parse_mode  
+        data: dict[str, Any] = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": text,
+        }
 
-        if reply_markup is not None:  
-            data["reply_markup"] = (  
-                reply_markup.to_dict()  
-                if hasattr(reply_markup, "to_dict")  
-                else reply_markup  
-            )  
+        if parse_mode is not None:
+            data["parse_mode"] = parse_mode
 
-        return await self.request("editMessageText", data)  
+        if reply_markup is not None:
+            data["reply_markup"] = (
+                reply_markup.to_dict()
+                if hasattr(reply_markup, "to_dict")
+                else reply_markup
+            )
 
-    async def delete_message(  
-        self,  
-        chat_id: int,  
-        message_id: int,  
-    ) -> dict[str, Any]:  
-        """حذف رسالة."""  
+        return await self.request("editMessageText", data)
 
-        return await self.request(  
-            "deleteMessage",  
-            {  
-                "chat_id": chat_id,  
-                "message_id": message_id,  
-            },  
-        )  
+    async def delete_message(
+        self,
+        chat_id: int,
+        message_id: int,
+    ) -> dict[str, Any]:
+        """حذف رسالة."""
 
-    async def ban_user(  
-        self,  
-        chat_id: int,  
-        user_id: int,  
-    ) -> dict[str, Any]:  
-        """حظر مستخدم."""  
+        return await self.request(
+            "deleteMessage",
+            {
+                "chat_id": chat_id,
+                "message_id": message_id,
+            },
+        )
 
-        return await self.request(  
-            "banChatMember",  
-            {  
-                "chat_id": chat_id,  
-                "user_id": user_id,  
-            },  
-        )  
+    async def ban_user(
+        self,
+        chat_id: int,
+        user_id: int,
+    ) -> dict[str, Any]:
+        """حظر مستخدم."""
 
-    async def get_chat_member(  
-        self,  
-        chat_id: int,  
-        user_id: int,  
-    ) -> dict[str, Any]:  
-        """جلب معلومات عضو في الشات."""  
+        return await self.request(
+            "banChatMember",
+            {
+                "chat_id": chat_id,
+                "user_id": user_id,
+            },
+        )
 
-        return await self.request(  
-            "getChatMember",  
-            {  
-                "chat_id": chat_id,  
-                "user_id": user_id,  
-            },  
-        )  
+    async def get_chat_member(
+        self,
+        chat_id: int,
+        user_id: int,
+    ) -> dict[str, Any]:
+        """جلب معلومات عضو في الشات."""
 
-    async def leave_chat(  
-        self,  
-        chat_id: int,  
-    ) -> dict[str, Any]:  
-        """مغادرة الشات."""  
+        return await self.request(
+            "getChatMember",
+            {
+                "chat_id": chat_id,
+                "user_id": user_id,
+            },
+        )
 
-        return await self.request(  
-            "leaveChat",  
-            {  
-                "chat_id": chat_id,  
-            },  
-        )  
+    async def leave_chat(
+        self,
+        chat_id: int,
+    ) -> dict[str, Any]:
+        """مغادرة الشات."""
 
-    async def answer_callback_query(  
-        self,  
-        callback_query_id: str,  
-        text: str | None = None,  
-        show_alert: bool = False,  
-    ) -> dict[str, Any]:  
-        """إرسال رد على callback_query لإغلاق حالة التحميل."""  
+        return await self.request(
+            "leaveChat",
+            {
+                "chat_id": chat_id,
+            },
+        )
 
-        data: dict[str, Any] = {  
-            "callback_query_id": callback_query_id,  
-            "show_alert": show_alert,  
-        }  
+    async def answer_callback_query(
+        self,
+        callback_query_id: str,
+        text: str | None = None,
+        show_alert: bool = False,
+    ) -> dict[str, Any]:
+        """إرسال رد على callback_query لإغلاق حالة التحميل."""
 
-        if text is not None:  
-            data["text"] = text  
+        data: dict[str, Any] = {
+            "callback_query_id": callback_query_id,
+            "show_alert": show_alert,
+        }
 
-        return await self.request("answerCallbackQuery", data)  
+        if text is not None:
+            data["text"] = text
+
+        return await self.request("answerCallbackQuery", data)
