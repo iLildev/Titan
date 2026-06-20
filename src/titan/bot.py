@@ -151,6 +151,16 @@ class Titan:
                 await self._dispatch("callback", ctx)
             return
 
+        # semantic event aliases — قبل dispatch الرسائل العامة
+        raw_msg = update._message()
+        if raw_msg:
+            if raw_msg.get("new_chat_members"):
+                await self._dispatch("new_member", ctx)
+                return
+            if raw_msg.get("left_chat_member"):
+                await self._dispatch("left_member", ctx)
+                return
+
         # message / command
         text = update.text
         command = self._extract_command(text) if text else None
