@@ -121,6 +121,30 @@ class Context:
             text=text,
         )
 
+    async def edit(
+        self,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+    ) -> Any:
+        """
+        تعديل نص الرسالة الحالية.
+        """
+
+        chat_id = self.chat_id
+        message_id = self.message_id
+
+        if chat_id is None or message_id is None:
+            return None
+
+        return await self.api.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+        )
+
     async def delete_message(self) -> Any:
         """
         حذف الرسالة الحالية.

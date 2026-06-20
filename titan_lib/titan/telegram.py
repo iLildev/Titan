@@ -119,6 +119,34 @@ class Telegram:
 
         return await self.request("sendMessage", data)  
 
+    async def edit_message_text(  
+        self,  
+        chat_id: int,  
+        message_id: int,  
+        text: str,  
+        parse_mode: str | None = None,  
+        reply_markup: Any | None = None,  
+    ) -> dict[str, Any]:  
+        """تعديل نص رسالة موجودة."""  
+
+        data: dict[str, Any] = {  
+            "chat_id": chat_id,  
+            "message_id": message_id,  
+            "text": text,  
+        }  
+
+        if parse_mode is not None:  
+            data["parse_mode"] = parse_mode  
+
+        if reply_markup is not None:  
+            data["reply_markup"] = (  
+                reply_markup.to_dict()  
+                if hasattr(reply_markup, "to_dict")  
+                else reply_markup  
+            )  
+
+        return await self.request("editMessageText", data)  
+
     async def delete_message(  
         self,  
         chat_id: int,  
