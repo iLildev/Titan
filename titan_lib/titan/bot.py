@@ -139,6 +139,12 @@ class Titan:
         await self.api.start()  
         self.log("Bot started")  
 
+        # warm-up اختياري: تحميل معلومات البوت مسبقاً لتسريع أول استخدام  
+        try:  
+            await self.api.get_me()  
+        except Exception:  
+            pass  
+
         try:  
             while True:  
                 try:  
