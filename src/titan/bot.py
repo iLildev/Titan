@@ -1,178 +1,209 @@
-"""  
-titan.bot  
+"""
+titan.bot
 
-هذا الملف هو المحرك الأساسي لـ Titan.  
+المحرك الأساسي لـ Titan.
 
-مسؤوليته:  
-- تشغيل البوت  
-- جلب التحديثات من Telegram  
-- تمريرها إلى Update ثم Context  
-- تنفيذ الـ handlers المسجلة  
+مسؤوليته:
+- تشغيل البوت
+- جلب التحديثات من Telegram
+- تمريرها إلى Update ثم Context
+- تنفيذ الـ handlers المسجلة
 
-لا يحتوي على أي منطق خاص بالبوت نفسه.  
-"""  
+لا يحتوي على أي منطق خاص بالبوت نفسه.
+"""
 
-from __future__ import annotations  
+from __future__ import annotations
 
-import asyncio  
-from typing import Any, Callable, Awaitable  
+import asyncio
+from typing import Any, Callable, Awaitable
 
-from titan.telegram import Telegram  
-from titan.update import Update  
-from titan.ctx import Context  
-
-
-Handler = Callable[[Context], Awaitable[Any]]  
+from titan.telegram import Telegram
+from titan.update import Update
+from titan.ctx import Context
 
 
-class Titan:  
-    """  
-    الكلاس الرئيسي الذي يستخدمه المطور.  
+Handler = Callable[[Context], Awaitable[Any]]
 
-    هذا هو Public API الخاص بـ Titan.  
-    """  
 
-    # -------------------------  
-    # Logging  
-    # -------------------------  
-    def log(self, msg: str) -> None:  
-        print(f"[Titan] {msg}")  
+class Titan:
+    """
+    الكلاس الرئيسي الذي يستخدمه المطور.
 
-    def __init__(self, token: str) -> None:  
-        self.api = Telegram(token)  
+    هذا هو Public API الخاص بـ Titan.
+    """
 
-        self.commands: dict[str, Handler] = {}  
-        self.handlers: dict[str, list[Handler]] = {}  
+    # -------------------------
+    # Logging
+    # -------------------------
+    def log(self, msg: str) -> None:
+        print(f"[Titan] {msg}")
 
-        self.offset: int = 0  
+    def __init__(self, token: str) -> None:
+        self.api = Telegram(token)
 
-    # -------------------------  
-    # Utilities  
-    # -------------------------  
-    def _extract_command(self, text: str) -> str | None:  
-        """  
-        استخراج اسم الأمر من النص.  
+        self.commands: dict[str, Handler] = {}
+        self.handlers: dict[str, list[Handler]] = {}
+        self.callback_handlers: dict[str, Handler] = {}
 
-        يدعم:  
-        - /start  
-        - /start@BotName  
-        """  
+        self.offset: int = 0
 
-        if not text.startswith("/"):  
-            return None  
+    # -------------------------
+    # Utilities
+    # -------------------------
+    def _extract_command(self, text: str) -> str | None:
+        """
+        استخراج اسم الأمر من النص.
 
-        command = text.split(maxsplit=1)[0][1:]  
-        if not command:  
-            return None  
+        يدعم:
+        - /start
+        - /start@BotName
+        """
 
-        return command.split("@", 1)[0]  
+        if not text.startswith("/"):
+            return None
 
-    # -------------------------  
-    # Registration  
-    # -------------------------  
-    def on(self, event: str):  
-        """  
-        تسجيل handler لحدث معين.  
+        command = text.split(maxsplit=1)[0][1:]
+        if not command:
+            return None
 
-        يدعم أي اسم حدث:  
-        - "message"  
-        - "channel_post"  
-        - "callback"  
-        - أي حدث مستقبلي  
-        """  
+        return command.split("@", 1)[0]
 
-        def decorator(func: Handler):  
-            self.handlers.setdefault(event, []).append(func)  
-            return func  
-        return decorator  
+    # -------------------------
+    # Registration
+    # -------------------------
+    def on(self, event: str):
+        """
+        تسجيل handler لحدث معين.
 
-    def command(self, name: str):  
-        """تسجيل أمر محدد مثل /start أو /help."""  
+        يدعم أي اسم حدث:
+        - "message"
+        - "channel_post"
+        - "callback"
+        - أي حدث مستقبلي
+        """
 
-        def decorator(func: Handler):  
-            self.commands[name] = func  
-            return func  
-        return decorator  
+        def decorator(func: Handler):
+            self.handlers.setdefault(event, []).append(func)
+            return func
+        return decorator
 
-    # -------------------------  
-    # Dispatch  
-    # -------------------------  
-    async def _dispatch(self, event: str, ctx: Context) -> None:  
-        """تشغيل جميع الـ handlers المسجلة لحدث معين."""  
+    def command(self, name: str):
+        """تسجيل أمر محدد مثل /start أو /help."""
 
-        for handler in self.handlers.get(event, []):  
-            await handler(ctx)  
+        def decorator(func: Handler):
+            self.commands[name] = func
+            return func
+        return decorator
 
-    # -------------------------  
-    # Update handling  
-    # -------------------------  
-    async def _handle_update(self, raw_update: dict[str, Any]) -> None:  
-        update = Update(raw_update)  
-        ctx = Context(update, self.api)  
+    def callback(self, data: str):
+        """
+        تسجيل handler لزر callback محدد بناءً على callback_data.
 
-        # channel  
-        if update.channel_post is not None:  
-            await self._dispatch("channel", ctx)  
-            return  
+        مثال:
+            @bot.callback("yes")
+            async def on_yes(ctx):
+                await ctx.answer_callback()
+                await ctx.reply("اخترت نعم")
 
-        # callback_query  
-        if update.callback_query is not None:  
-            await self._dispatch("callback", ctx)  
-            return  
+        إذا لم يوجد handler مطابق لـ data، يُرسل الـ update
+        إلى on("callback") إن وجد.
+        """
 
-        # message / command  
-        text = update.text  
-        command = self._extract_command(text) if text else None  
+        def decorator(func: Handler):
+            self.callback_handlers[data] = func
+            return func
+        return decorator
 
-        if command is not None:  
-            handler = self.commands.get(command)  
-            if handler is not None:  
-                await handler(ctx)  
-                return  
+    # -------------------------
+    # Dispatch
+    # -------------------------
+    async def _dispatch(self, event: str, ctx: Context) -> None:
+        """تشغيل جميع الـ handlers المسجلة لحدث معين."""
 
-        await self._dispatch("message", ctx)  
+        for handler in self.handlers.get(event, []):
+            try:
+                await handler(ctx)
+            except Exception as e:
+                self.log(f"Handler error [{event}]: {e}")
 
-    # -------------------------  
-    # Runtime  
-    # -------------------------  
-    async def run_async(self, debug: bool = False) -> None:  
-        await self.api.start()  
-        self.log("Bot started")  
+    # -------------------------
+    # Update handling
+    # -------------------------
+    async def _handle_update(self, raw_update: dict[str, Any]) -> None:
+        update = Update(raw_update)
+        ctx = Context(update, self.api)
 
-        # warm-up اختياري: تحميل معلومات البوت مسبقاً لتسريع أول استخدام  
-        try:  
-            me = await self.api.get_me()  
-            username = me.get("username", "unknown")  
-            self.log(f"Running as @{username}")  
-        except Exception:  
-            pass  
+        # channel
+        if update.channel_post is not None:
+            await self._dispatch("channel", ctx)
+            return
 
-        try:  
-            while True:  
-                try:  
-                    updates = await self.api.get_updates(  
-                        offset=self.offset + 1  
-                    )  
+        # callback_query — route by data first, fallback to on("callback")
+        if update.callback_query is not None:
+            data = ctx.callback_data
+            specific = self.callback_handlers.get(data) if data else None
+            if specific is not None:
+                try:
+                    await specific(ctx)
+                except Exception as e:
+                    self.log(f"Callback handler error [{data}]: {e}")
+            else:
+                await self._dispatch("callback", ctx)
+            return
 
-                    for raw in updates:  
-                        self.offset = raw["update_id"]  
+        # message / command
+        text = update.text
+        command = self._extract_command(text) if text else None
 
-                        if debug:  
-                            self.log(f"update received: {raw}")  
+        if command is not None:
+            handler = self.commands.get(command)
+            if handler is not None:
+                try:
+                    await handler(ctx)
+                except Exception as e:
+                    self.log(f"Command handler error [{command}]: {e}")
+                return
 
-                        await self._handle_update(raw)  
+        await self._dispatch("message", ctx)
 
-                except Exception as e:  
-                    self.log(f"Polling error: {e}")  
+    # -------------------------
+    # Runtime
+    # -------------------------
+    async def run_async(self, debug: bool = False) -> None:
+        await self.api.start()
+        self.log("Bot started")
 
-                # no sleep needed (long polling handles waiting)  
+        try:
+            me = await self.api.get_me()
+            username = me.get("username", "unknown")
+            self.log(f"Running as @{username}")
+        except Exception:
+            pass
 
-        finally:  
-            self.log("Bot stopped")  
-            await self.api.close()  
+        try:
+            while True:
+                try:
+                    updates = await self.api.get_updates(
+                        offset=self.offset + 1
+                    )
 
-    # -------------------------  
-    # Entry point  
-    # -------------------------  
-    def run(self, debug: bool = False) -> None:  
-        asyncio.run(self.run_async(debug=debug))  
+                    for raw in updates:
+                        self.offset = raw["update_id"]
+
+                        if debug:
+                            self.log(f"update received: {raw}")
+
+                        await self._handle_update(raw)
+
+                except Exception as e:
+                    self.log(f"Polling error: {e}")
+
+        finally:
+            self.log("Bot stopped")
+            await self.api.close()
+
+    # -------------------------
+    # Entry point
+    # -------------------------
+    def run(self, debug: bool = False) -> None:
+        asyncio.run(self.run_async(debug=debug))

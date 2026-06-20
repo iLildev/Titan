@@ -107,9 +107,23 @@ class Context:
     # Actions
     # -------------------------
 
-    async def reply(self, text: str) -> Any:
+    async def reply(
+        self,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+    ) -> Any:
         """
-        إرسال رسالة رد في نفس الشات.
+        إرسال رسالة في نفس الشات.
+
+        المعاملات:
+        - text: نص الرسالة
+        - parse_mode: "HTML" أو "Markdown" (اختياري)
+        - reply_markup: InlineKeyboard أو أي markup آخر (اختياري)
+
+        مثال:
+            kb = InlineKeyboard().add("نعم", callback_data="yes")
+            await ctx.reply("اختر:", reply_markup=kb)
         """
 
         chat_id = self.chat_id
@@ -119,6 +133,8 @@ class Context:
         return await self.api.send_message(
             chat_id=chat_id,
             text=text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
         )
 
     async def edit(
