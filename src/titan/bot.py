@@ -17,12 +17,16 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Callable, Awaitable
 
+from titan.errors import TitanError
 from titan.telegram import Telegram
 from titan.update import Update
 from titan.ctx import Context
 
 
 Handler = Callable[[Context], Awaitable[Any]]
+
+_BACKOFF_BASE: float = 1.0
+_BACKOFF_MAX: float = 30.0
 
 
 class Titan:
@@ -77,9 +81,10 @@ class Titan:
 
         يدعم أي اسم حدث:
         - "message"
-        - "channel_post"
+        - "channel"
         - "callback"
-        - أي حدث مستقبلي
+        - "new_member"
+        - "left_member"
         """
 
         def decorator(func: Handler):
@@ -88,9 +93,18 @@ class Titan:
         return decorator
 
     def command(self, name: str):
-        """تسجيل أمر محدد مثل /start أو /help."""
+        """
+        تسجيل أمر محدد مثل /start أو /help.
+
+        يرمي TitanError إذا كان الأمر مسجلاً مسبقاً.
+        """
 
         def decorator(func: Handler):
+            if name in self.commands:
+                raise TitanError(
+                    f"Command '{name}' is already registered. "
+                    f"Each command can only have one handler."
+                )
             self.commands[name] = func
             return func
         return decorator
@@ -98,6 +112,8 @@ class Titan:
     def callback(self, data: str):
         """
         تسجيل handler لزر callback محدد بناءً على callback_data.
+
+        يرمي TitanError إذا كانت الـ data مسجلة مسبقاً.
 
         مثال:
             @bot.callback("yes")
@@ -110,6 +126,11 @@ class Titan:
         """
 
         def decorator(func: Handler):
+            if data in self.callback_handlers:
+                raise TitanError(
+                    f"Callback handler for '{data}' is already registered. "
+                    f"Each callback_data value can only have one handler."
+                )
             self.callback_handlers[data] = func
             return func
         return decorator
@@ -190,12 +211,16 @@ class Titan:
         except Exception:
             pass
 
+        backoff: float = 0.0
+
         try:
             while True:
                 try:
                     updates = await self.api.get_updates(
                         offset=self.offset + 1
                     )
+
+                    backoff = 0.0
 
                     for raw in updates:
                         self.offset = raw["update_id"]
@@ -206,7 +231,12 @@ class Titan:
                         await self._handle_update(raw)
 
                 except Exception as e:
-                    self.log(f"Polling error: {e}")
+                    backoff = min(
+                        backoff * 2 if backoff else _BACKOFF_BASE,
+                        _BACKOFF_MAX,
+                    )
+                    self.log(f"Polling error: {e}. Retrying in {backoff:.0f}s...")
+                    await asyncio.sleep(backoff)
 
         finally:
             self.log("Bot stopped")
