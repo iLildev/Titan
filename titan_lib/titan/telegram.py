@@ -25,6 +25,7 @@ class Telegram:
         self.token = token  
         self.base_url = f"https://api.telegram.org/bot{token}"  
         self.session: aiohttp.ClientSession | None = None  
+        self._me: dict[str, Any] | None = None  
 
     async def start(self) -> None:  
         """إنشاء جلسة HTTP إذا لم تكن موجودة."""  
@@ -63,6 +64,15 @@ class Telegram:
                 )  
 
             return result  
+
+    async def get_me(self) -> dict[str, Any]:  
+        """جلب معلومات البوت. النتيجة محفوظة في الذاكرة بعد أول استدعاء."""  
+
+        if self._me is None:  
+            result = await self.request("getMe")  
+            self._me = result.get("result", {})  
+
+        return self._me  
 
     async def get_updates(  
         self,  

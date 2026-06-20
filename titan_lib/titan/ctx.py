@@ -39,6 +39,9 @@ class Context:
         self.chat = Chat(self.update._chat())
         self.message = Message(self.update._message(), self.api)
 
+        # لا يوجد API call هنا — يتطلب refresh_permissions() صريح
+        self.can_delete: bool | None = None
+
     # -------------------------
     # Message data
     # -------------------------
@@ -151,6 +154,30 @@ class Context:
             chat_id=chat_id,
             user_id=target_user,
         )
+
+    async def refresh_permissions(self) -> None:
+        """
+        تحديث صلاحيات البوت في الشات الحالي.
+
+        يجب استدعاؤها صراحةً — لا يوجد API call تلقائي.
+        النتيجة تُخزن في ctx.can_delete.
+        """
+
+        chat_id = self.chat_id
+        if chat_id is None:
+            self.can_delete = False
+            return
+
+        try:
+            me = await self.api.get_me()
+            member = await self.api.get_chat_member(
+                chat_id=chat_id,
+                user_id=me["id"],
+            )
+            result = member.get("result", {})
+            self.can_delete = result.get("can_delete_messages", False)
+        except Exception:
+            self.can_delete = False
 
     async def ban(self, user_id: int | None = None) -> Any:
         """اختصار لـ ban_user."""
