@@ -3,28 +3,25 @@ models.message
 
 تمثيل مبسط لرسالة Telegram.
 
-هذا الكائن يوفر واجهة سهلة للتعامل مع بيانات الرسالة
-بدلاً من الوصول المباشر إلى JSON القادم من Telegram.
+data-only object — لا يحتوي على أي عمليات أو API calls.
+جميع العمليات (reply, send, delete, edit) تتم عبر ctx.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from titan.telegram import Telegram
-
 
 class Message:
     """
     تمثيل مبسط لرسالة Telegram.
 
-    الهدف:
-    جمع بيانات الرسالة وتوفير أدوات أساسية للتعامل معها.
+    يحتوي على بيانات الرسالة فقط.
+    للتفاعل مع الرسالة استخدم ctx مباشرة.
     """
 
-    def __init__(self, raw: dict[str, Any] | None, api: Telegram | None = None) -> None:
+    def __init__(self, raw: dict[str, Any] | None) -> None:
         self.raw = raw or {}
-        self.api = api
 
     # -------------------------
     # Message data
@@ -38,54 +35,10 @@ class Message:
     def text(self) -> str | None:
         return self.raw.get("text")
 
-    # -------------------------
-    # Chat data (optional shortcut)
-    # -------------------------
-
     @property
     def chat_id(self) -> int | None:
         chat = self.raw.get("chat")
         return chat.get("id") if chat else None
-
-    # -------------------------
-    # Actions
-    # -------------------------
-
-    async def reply(self, text: str) -> Any:
-        """
-        الرد على نفس الرسالة.
-        """
-
-        if self.api is None:
-            return None
-
-        chat_id = self.chat_id
-        if chat_id is None:
-            return None
-
-        return await self.api.send_message(
-            chat_id=chat_id,
-            text=text,
-        )
-
-    async def delete(self) -> Any:
-        """
-        حذف الرسالة.
-        """
-
-        if self.api is None:
-            return None
-
-        chat_id = self.chat_id
-        message_id = self.id
-
-        if chat_id is None or message_id is None:
-            return None
-
-        return await self.api.delete_message(
-            chat_id=chat_id,
-            message_id=message_id,
-        )
 
     # -------------------------
     # Export

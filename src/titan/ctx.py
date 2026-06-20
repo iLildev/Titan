@@ -37,7 +37,7 @@ class Context:
 
         self.sender = Sender(self.update._user())
         self.chat = Chat(self.update._chat())
-        self.message = Message(self.update._message(), self.api)
+        self.message = Message(self.update._message())
 
         # لا يوجد API call هنا — يتطلب refresh_permissions() صريح
         self.can_delete: bool | None = None
@@ -292,12 +292,3 @@ class Context:
             show_alert=show_alert,
         )
 
-    # -------------------------
-    # Helpers
-    # -------------------------
-
-    def is_group(self) -> bool:
-        return self.update.chat_type in ("group", "supergroup")
-
-    def is_private(self) -> bool:
-        return self.update.chat_type == "private"
