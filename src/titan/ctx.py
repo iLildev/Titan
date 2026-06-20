@@ -96,6 +96,7 @@ class Context:
     def new_members(self) -> list[dict] | None:
         """
         قائمة الأعضاء الجدد في رسائل الانضمام.
+        متاح داخل @bot.on("new_member").
         """
 
         msg = self.update._message()
@@ -103,6 +104,24 @@ class Context:
             return None
 
         return msg.get("new_chat_members") or None
+
+    @property
+    def left_member(self) -> dict | None:
+        """
+        بيانات العضو الذي غادر الشات.
+        متاح داخل @bot.on("left_member").
+
+        مثال:
+            @bot.on("left_member")
+            async def on_leave(ctx):
+                print(ctx.left_member)  # {"id": 99, "first_name": "Ali", ...}
+        """
+
+        msg = self.update._message()
+        if not msg:
+            return None
+
+        return msg.get("left_chat_member") or None
 
     # -------------------------
     # Actions
