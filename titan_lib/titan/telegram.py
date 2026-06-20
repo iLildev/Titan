@@ -138,3 +138,49 @@ class Telegram:
                 "user_id": user_id,  
             },  
         )  
+
+    async def get_chat_member(  
+        self,  
+        chat_id: int,  
+        user_id: int,  
+    ) -> dict[str, Any]:  
+        """جلب معلومات عضو في الشات."""  
+
+        return await self.request(  
+            "getChatMember",  
+            {  
+                "chat_id": chat_id,  
+                "user_id": user_id,  
+            },  
+        )  
+
+    async def leave_chat(  
+        self,  
+        chat_id: int,  
+    ) -> dict[str, Any]:  
+        """مغادرة الشات."""  
+
+        return await self.request(  
+            "leaveChat",  
+            {  
+                "chat_id": chat_id,  
+            },  
+        )  
+
+    async def answer_callback_query(  
+        self,  
+        callback_query_id: str,  
+        text: str | None = None,  
+        show_alert: bool = False,  
+    ) -> dict[str, Any]:  
+        """إرسال رد على callback_query لإغلاق حالة التحميل."""  
+
+        data: dict[str, Any] = {  
+            "callback_query_id": callback_query_id,  
+            "show_alert": show_alert,  
+        }  
+
+        if text is not None:  
+            data["text"] = text  
+
+        return await self.request("answerCallbackQuery", data)  

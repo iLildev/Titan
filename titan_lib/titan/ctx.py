@@ -75,6 +75,31 @@ class Context:
 
         return cb.get("data")
 
+    @property
+    def callback_id(self) -> str | None:
+        """
+        معرّف الـ callback_query.
+        مطلوب لـ answer_callback.
+        """
+
+        cb = self.update.callback_query
+        if not cb:
+            return None
+
+        return cb.get("id")
+
+    @property
+    def new_members(self) -> list[dict] | None:
+        """
+        قائمة الأعضاء الجدد في رسائل الانضمام.
+        """
+
+        msg = self.update._message()
+        if not msg:
+            return None
+
+        return msg.get("new_chat_members") or None
+
     # -------------------------
     # Actions
     # -------------------------
@@ -136,17 +161,14 @@ class Context:
         إغلاق حالة التحميل الخاصة بأزرار callback.
         """
 
-        cb = self.update.callback_query
-        if not cb:
+        callback_id = self.callback_id
+        if callback_id is None:
             return None
 
-        return await self.api.request(
-            "answerCallbackQuery",
-            {
-                "callback_query_id": cb.get("id"),
-                "text": text,
-                "show_alert": show_alert,
-            },
+        return await self.api.answer_callback_query(
+            callback_query_id=callback_id,
+            text=text,
+            show_alert=show_alert,
         )
 
     # -------------------------
