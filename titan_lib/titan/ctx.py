@@ -152,6 +152,32 @@ class Context:
             user_id=target_user,
         )
 
+    async def ban(self, user_id: int | None = None) -> Any:
+        """اختصار لـ ban_user."""
+
+        return await self.ban_user(user_id)
+
+    async def leave(self) -> Any:
+        """مغادرة الشات الحالي."""
+
+        chat_id = self.chat_id
+        if chat_id is None:
+            return None
+
+        return await self.api.leave_chat(chat_id=chat_id)
+
+    async def get_member(self, user_id: int) -> Any:
+        """جلب معلومات عضو في الشات الحالي."""
+
+        chat_id = self.chat_id
+        if chat_id is None:
+            return None
+
+        return await self.api.get_chat_member(
+            chat_id=chat_id,
+            user_id=user_id,
+        )
+
     async def answer_callback(
         self,
         text: str | None = None,
