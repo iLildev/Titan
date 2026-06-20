@@ -6,7 +6,7 @@ build-backend = "setuptools.backends.legacy:build"
 name = "titan-bot"
 version = "0.1.0"
 description = "A simple and modern framework for building Telegram bots"
-readme = "titan_lib/README.md"
+readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 keywords = ["telegram", "bot", "framework", "async"]
@@ -20,4 +20,4 @@ Homepage = "https://github.com/your-username/titan-bot"
 Issues = "https://github.com/your-username/titan-bot/issues"
 
 [tool.setuptools.packages.find]
-where = ["titan_lib"]
+where = ["src"]
