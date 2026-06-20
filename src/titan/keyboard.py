@@ -4,9 +4,9 @@ titan.keyboard
 أدوات بناء لوحات المفاتيح لـ Telegram.
 
 الهدف:
-- توفير واجهة بسيطة لبناء Inline keyboards
-- إخفاء بنية JSON الخام من المطور
-- لا يتطلب استيراد أي شيء من Telegram SDK خارجي
+- واجهة row-based واضحة وقابلة للقراءة
+- لا يحتاج المستخدم استيراد أي شيء إضافي
+- متوافق مع ctx.reply(reply_markup=...)
 """
 
 from __future__ import annotations
@@ -16,11 +16,9 @@ from typing import Any
 
 class InlineButton:
     """
-    زر واحد داخل Inline keyboard.
+    زر واحد داخل InlineKeyboard.
 
-    يدعم:
-    - callback_data: لتشغيل @bot.on("callback")
-    - url: لفتح رابط مباشرة
+    تفصيل داخلي — يُبنى عبر InlineKeyboard.button() مباشرة.
     """
 
     def __init__(
@@ -33,10 +31,6 @@ class InlineButton:
         self.text = text
         self.callback_data = callback_data
         self.url = url
-
-    # -------------------------
-    # Export
-    # -------------------------
 
     def to_dict(self) -> dict[str, Any]:
         data: dict[str, Any] = {"text": self.text}
@@ -52,44 +46,61 @@ class InlineButton:
 
 class InlineKeyboard:
     """
-    لوحة مفاتيح Inline قابلة للبناء بشكل سلسلة.
+    لوحة مفاتيح Inline تُبنى بصفوف واضحة.
+
+    المبدأ:
+    - .row() يبدأ صفاً جديداً
+    - .button() يضيف زراً للصف الحالي
 
     مثال:
         kb = (
             InlineKeyboard()
-            .add("✅ موافق", callback_data="yes")
-            .add("❌ رفض", callback_data="no")
             .row()
-            .add("🔗 رابط", url="https://example.com")
+            .button("✅ موافق", callback_data="yes")
+            .button("❌ رفض", callback_data="no")
+            .row()
+            .button("🔗 رابط", url="https://example.com")
         )
 
         await ctx.reply("اختر:", reply_markup=kb)
     """
 
     def __init__(self) -> None:
-        self._rows: list[list[InlineButton]] = [[]]
+        self._rows: list[list[InlineButton]] = []
 
     # -------------------------
     # Building
     # -------------------------
 
-    def add(
+    def row(self) -> InlineKeyboard:
+        """بدء صف جديد من الأزرار."""
+
+        self._rows.append([])
+        return self
+
+    def button(
         self,
         text: str,
         *,
         callback_data: str | None = None,
         url: str | None = None,
     ) -> InlineKeyboard:
-        """إضافة زر للصف الحالي."""
+        """
+        إضافة زر للصف الحالي.
 
-        button = InlineButton(text, callback_data=callback_data, url=url)
-        self._rows[-1].append(button)
-        return self
+        يجب استدعاء .row() قبل أول .button().
 
-    def row(self) -> InlineKeyboard:
-        """البدء بصف جديد."""
+        المعاملات:
+        - text: نص الزر
+        - callback_data: البيانات التي تُرسل عند الضغط (لـ @bot.callback)
+        - url: رابط يُفتح عند الضغط
+        """
 
-        self._rows.append([])
+        if not self._rows:
+            self._rows.append([])
+
+        btn = InlineButton(text, callback_data=callback_data, url=url)
+        self._rows[-1].append(btn)
         return self
 
     # -------------------------
