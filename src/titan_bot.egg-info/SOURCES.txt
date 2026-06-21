@@ -5,6 +5,7 @@ src/titan/bot.py
 src/titan/ctx.py
 src/titan/errors.py
 src/titan/keyboard.py
+src/titan/py.typed
 src/titan/telegram.py
 src/titan/update.py
 src/titan/models/__init__.py
