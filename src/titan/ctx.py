@@ -30,11 +30,13 @@ class Context:
     يحتوي على:
     - البيانات المستخرجة من Update
     - أدوات للتفاعل مع Telegram
+
+    ملاحظة: _api هو internal — استخدم دوال ctx مباشرة.
     """
 
     def __init__(self, update: Update, api: Telegram) -> None:
         self.update = update
-        self.api = api
+        self._api = api
 
         self.sender = Sender(self.update._user())
         self.chat = Chat(self.update._chat())
@@ -150,7 +152,7 @@ class Context:
         if chat_id is None:
             return None
 
-        return await self.api.send_message(
+        return await self._api.send_message(
             chat_id=chat_id,
             text=text,
             parse_mode=parse_mode,
@@ -178,7 +180,7 @@ class Context:
         if chat_id is None:
             return None
 
-        return await self.api.send_message(
+        return await self._api.send_message(
             chat_id=chat_id,
             text=text,
             parse_mode=parse_mode,
@@ -213,7 +215,7 @@ class Context:
         if chat_id is None or message_id is None:
             return None
 
-        return await self.api.edit_message_text(
+        return await self._api.edit_message_text(
             chat_id=chat_id,
             message_id=message_id,
             text=text,
@@ -232,7 +234,7 @@ class Context:
         if chat_id is None or message_id is None:
             return None
 
-        return await self.api.delete_message(
+        return await self._api.delete_message(
             chat_id=chat_id,
             message_id=message_id,
         )
@@ -250,7 +252,7 @@ class Context:
         if chat_id is None or target_user is None:
             return None
 
-        return await self.api.ban_user(
+        return await self._api.ban_user(
             chat_id=chat_id,
             user_id=target_user,
         )
@@ -269,8 +271,8 @@ class Context:
             return
 
         try:
-            me = await self.api.get_me()
-            member = await self.api.get_chat_member(
+            me = await self._api.get_me()
+            member = await self._api.get_chat_member(
                 chat_id=chat_id,
                 user_id=me["id"],
             )
@@ -291,7 +293,7 @@ class Context:
         if chat_id is None:
             return None
 
-        return await self.api.leave_chat(chat_id=chat_id)
+        return await self._api.leave_chat(chat_id=chat_id)
 
     async def get_member(self, user_id: int) -> Any:
         """جلب معلومات عضو في الشات الحالي."""
@@ -300,7 +302,7 @@ class Context:
         if chat_id is None:
             return None
 
-        return await self.api.get_chat_member(
+        return await self._api.get_chat_member(
             chat_id=chat_id,
             user_id=user_id,
         )
@@ -318,9 +320,8 @@ class Context:
         if callback_id is None:
             return None
 
-        return await self.api.answer_callback_query(
+        return await self._api.answer_callback_query(
             callback_query_id=callback_id,
             text=text,
             show_alert=show_alert,
         )
-

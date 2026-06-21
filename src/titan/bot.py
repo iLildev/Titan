@@ -24,6 +24,7 @@ from titan.ctx import Context
 
 
 Handler = Callable[[Context], Awaitable[Any]]
+OffsetCallback = Callable[[int], None]
 
 _BACKOFF_BASE: float = 1.0
 _BACKOFF_MAX: float = 30.0
@@ -200,7 +201,12 @@ class Titan:
     # -------------------------
     # Runtime
     # -------------------------
-    async def run_async(self, debug: bool = False, offset: int = 0) -> None:
+    async def run_async(
+        self,
+        debug: bool = False,
+        offset: int = 0,
+        on_offset: OffsetCallback | None = None,
+    ) -> None:
         self.offset = offset
         await self.api.start()
         self.log("Bot started")
@@ -226,6 +232,9 @@ class Titan:
                     for raw in updates:
                         self.offset = raw["update_id"]
 
+                        if on_offset is not None:
+                            on_offset(self.offset)
+
                         if debug:
                             self.log(f"update received: {raw}")
 
@@ -246,5 +255,10 @@ class Titan:
     # -------------------------
     # Entry point
     # -------------------------
-    def run(self, debug: bool = False, offset: int = 0) -> None:
-        asyncio.run(self.run_async(debug=debug, offset=offset))
+    def run(
+        self,
+        debug: bool = False,
+        offset: int = 0,
+        on_offset: OffsetCallback | None = None,
+    ) -> None:
+        asyncio.run(self.run_async(debug=debug, offset=offset, on_offset=on_offset))
