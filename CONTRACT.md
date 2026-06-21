@@ -77,7 +77,19 @@ Semantic events must not overlap with message handler.
 
 ---
 
-# 8. Stability Rule
+# 8. Alias Layer (Optional)
+
+- bot.alias(alias, target) تعرّف اسمًا بديلاً لـ method موجودة في Context
+- المطور هو من يحدد كل alias بالكامل — لا توجد aliases جاهزة في المكتبة
+- الاسم الأصلي يبقى ثابتًا ومتاحًا بدون أي تغيير
+- alias لا يستبدل الاسم الأصلي ولا يعطّله
+- إذا كان الاسم الهدف غير موجود في Context → TitanError
+- الميزة اختيارية بالكامل — مشروع لا يستخدمها لا يتأثر بأي شكل
+- لا تغيير في أي سلوك أساسي — naming layer فقط
+
+---
+
+# 9. Stability Rule
 
 Any change is breaking if it:
 - changes output for same input
