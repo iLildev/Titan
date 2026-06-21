@@ -230,15 +230,20 @@ class Titan:
                     backoff = 0.0
 
                     for raw in updates:
-                        self.offset = raw["update_id"]
+                        update_id = raw.get("update_id")
+                        if update_id is None:
+                            self.log(f"Skipping update with no update_id: {raw}")
+                            continue
 
-                        if on_offset is not None:
-                            on_offset(self.offset)
+                        self.offset = update_id
 
                         if debug:
                             self.log(f"update received: {raw}")
 
                         await self._handle_update(raw)
+
+                        if on_offset is not None:
+                            on_offset(self.offset)
 
                 except Exception as e:
                     backoff = min(

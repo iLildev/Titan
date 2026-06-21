@@ -29,9 +29,9 @@ class Update:
         self.channel_post = raw.get("channel_post")  
         self.callback_query = raw.get("callback_query")  
 
-    # -------------------------  
-    # Internal helpers  
-    # -------------------------  
+    # -------------------------
+    # Message resolution
+    # -------------------------
 
     def get_message(self) -> dict[str, Any] | None:
         if self.message:
@@ -66,15 +66,15 @@ class Update:
     # Message data  
     # -------------------------  
 
-    @property  
-    def text(self) -> str | None:  
-        msg = self._message()  
-        return msg.get("text") if msg else None  
+    @property
+    def text(self) -> str | None:
+        msg = self.get_message()
+        return msg.get("text") if msg else None
 
-    @property  
-    def message_id(self) -> int | None:  
-        msg = self._message()  
-        return msg.get("message_id") if msg else None  
+    @property
+    def message_id(self) -> int | None:
+        msg = self.get_message()
+        return msg.get("message_id") if msg else None
 
     # -------------------------  
     # User data  
