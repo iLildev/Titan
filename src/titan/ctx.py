@@ -208,8 +208,9 @@ class Context:
 
         if self.update.callback_query is None:
             raise TitanError(
-                "ctx.edit() can only be used inside a callback handler. "
-                "Use ctx.reply() or ctx.send() to send a new message instead."
+                "ctx.edit() requires an active callback_query context. "
+                "It can only be called inside @bot.on('callback') or @bot.callback('data') handlers. "
+                "To send a new message instead, use ctx.reply() or ctx.send()."
             )
 
         chat_id = self.chat_id

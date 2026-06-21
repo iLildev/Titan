@@ -109,7 +109,8 @@ class Titan:
             if name in self.commands:
                 raise TitanError(
                     f"Command '{name}' is already registered. "
-                    f"Each command can only have one handler."
+                    "Each command can only have one handler. "
+                    "Use @bot.on('message') if you need multiple handlers for the same input."
                 )
             self.commands[name] = func
             return func
@@ -166,8 +167,9 @@ class Titan:
         def decorator(func: Handler):
             if data in self.callback_handlers:
                 raise TitanError(
-                    f"Callback handler for '{data}' is already registered. "
-                    f"Each callback_data value can only have one handler."
+                    f"Callback data '{data}' is already registered. "
+                    "Each callback_data value can only have one handler. "
+                    "Use a unique callback_data string per button."
                 )
             self.callback_handlers[data] = func
             return func

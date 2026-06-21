@@ -23,7 +23,10 @@ class AliasMap:
     def register(self, alias: str, target: str) -> None:
         if not hasattr(Context, target):
             raise TitanError(
-                f"Cannot create alias '{alias}': '{target}' does not exist in Context."
+                f"Cannot create alias '{alias}' → '{target}': "
+                f"'{target}' does not exist in Context. "
+                "Use the exact method name as it appears in ctx "
+                "(e.g. 'reply', 'send', 'edit', 'ban_user', 'delete_message')."
             )
         self._map[alias] = target
 

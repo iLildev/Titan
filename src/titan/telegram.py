@@ -48,7 +48,10 @@ class Telegram:
         """
 
         if self.session is None:
-            raise TelegramError("Telegram session is not started.")
+            raise TelegramError(
+                f"Cannot call '{method}': Telegram session is not started. "
+                "Call bot.run() to start the bot before making API requests."
+            )
 
         url = f"{self.base_url}/{method}"
 
@@ -56,11 +59,18 @@ class Telegram:
             try:
                 result: dict[str, Any] = await response.json()
             except Exception:
-                raise TelegramError("Invalid JSON response from Telegram")
+                raise TelegramError(
+                    f"Telegram returned a non-JSON response for '{method}'. "
+                    "This usually means a network issue or an invalid bot token. "
+                    "Check your token and internet connection."
+                )
 
             if not result.get("ok"):
+                description = result.get("description", "unknown error")
+                error_code = result.get("error_code", "N/A")
                 raise TelegramError(
-                    result.get("description", "Unknown Telegram error.")
+                    f"Telegram API error on '{method}': {description} "
+                    f"(error_code: {error_code})"
                 )
 
             return result
