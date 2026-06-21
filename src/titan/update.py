@@ -43,12 +43,12 @@ class Update:
         return None
 
     def _user(self) -> dict[str, Any] | None:
+        if self.callback_query:
+            return self.callback_query.get("from")
+
         msg = self.get_message()
         if msg:
             return msg.get("from")
-
-        if self.callback_query:
-            return self.callback_query.get("from")
 
         return None
 
