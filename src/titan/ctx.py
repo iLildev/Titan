@@ -45,6 +45,9 @@ class Context:
         # لا يوجد API call هنا — يتطلب refresh_permissions() صريح
         self.can_delete: bool | None = None
 
+        # يُعيَّن من bot قبل تنفيذ أي middleware أو handler
+        self.is_banned: bool = False
+
     # -------------------------
     # Message data
     # -------------------------

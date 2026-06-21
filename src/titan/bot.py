@@ -22,6 +22,7 @@ from titan.telegram import Telegram
 from titan.update import Update
 from titan.ctx import Context
 from titan.alias import AliasMap
+from titan.middleware import MiddlewareChain, Middleware
 
 
 Handler = Callable[[Context], Awaitable[Any]]
@@ -51,6 +52,8 @@ class Titan:
         self.handlers: dict[str, list[Handler]] = {}
         self.callback_handlers: dict[str, Handler] = {}
         self.aliases = AliasMap()
+        self.middleware_chain = MiddlewareChain()
+        self.banned_users: set[int] = set()
 
         self.offset: int = 0
 
@@ -112,6 +115,23 @@ class Titan:
             return func
         return decorator
 
+    def use(self, fn: Middleware) -> Middleware:
+        """
+        تسجيل middleware تُنفَّذ قبل كل handler.
+
+        تقرأ ctx فقط — لا تعدّل سلوك المكتبة.
+        إذا أعادت False → يتوقف الـ update.
+
+        مثال:
+            @bot.use
+            async def check_banned(ctx):
+                if ctx.is_banned:
+                    return False
+        """
+
+        self.middleware_chain.add(fn)
+        return fn
+
     def alias(self, alias: str, target: str) -> None:
         """
         تعريف اسم بديل لـ method موجودة في Context.
@@ -169,7 +189,15 @@ class Titan:
     async def _handle_update(self, raw_update: dict[str, Any]) -> None:
         update = Update(raw_update)
         ctx = Context(update, self.api)
+
+        if ctx.user_id is not None:
+            ctx.is_banned = ctx.user_id in self.banned_users
+
         self.aliases.apply(ctx)
+
+        should_continue = await self.middleware_chain.run(ctx)
+        if not should_continue:
+            return
 
         # channel
         if update.channel_post is not None:
