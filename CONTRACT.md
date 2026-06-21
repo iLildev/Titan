@@ -126,7 +126,18 @@ Any middleware feature that introduces hidden execution paths or non-linear flow
 
 ---
 
-# 10. Stability Rule
+# 10. Error Handling
+
+Errors in Titan must follow these principles:
+
+- Explain what happened
+- Explain why it happened
+- Provide a fix suggestion when possible
+- Never change runtime behavior
+
+---
+
+# 11. Stability Rule
 
 Any change is breaking if it:
 - changes output for same input
