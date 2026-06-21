@@ -9,6 +9,8 @@ Keywords: telegram,bot,framework,async
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: aiohttp>=3.9
+Requires-Dist: pytest>=9.1.1
+Requires-Dist: pytest-asyncio>=1.4.0
 
 Titan
 
