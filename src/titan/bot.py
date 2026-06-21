@@ -21,6 +21,7 @@ from titan.errors import TitanError
 from titan.telegram import Telegram
 from titan.update import Update
 from titan.ctx import Context
+from titan.alias import AliasMap
 
 
 Handler = Callable[[Context], Awaitable[Any]]
@@ -49,6 +50,7 @@ class Titan:
         self.commands: dict[str, Handler] = {}
         self.handlers: dict[str, list[Handler]] = {}
         self.callback_handlers: dict[str, Handler] = {}
+        self.aliases = AliasMap()
 
         self.offset: int = 0
 
@@ -110,6 +112,19 @@ class Titan:
             return func
         return decorator
 
+    def alias(self, alias: str, target: str) -> None:
+        """
+        تعريف اسم بديل لـ method موجودة في Context.
+
+        مثال:
+            bot.alias("say", "reply")
+
+        الاسم الأصلي يبقى ثابتاً بدون أي تغيير.
+        إذا كان الاسم الهدف غير موجود في Context → TitanError.
+        """
+
+        self.aliases.register(alias, target)
+
     def callback(self, data: str):
         """
         تسجيل handler لزر callback محدد بناءً على callback_data.
@@ -154,6 +169,7 @@ class Titan:
     async def _handle_update(self, raw_update: dict[str, Any]) -> None:
         update = Update(raw_update)
         ctx = Context(update, self.api)
+        self.aliases.apply(ctx)
 
         # channel
         if update.channel_post is not None:
