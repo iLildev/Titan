@@ -89,7 +89,44 @@ Semantic events must not overlap with message handler.
 
 ---
 
-# 9. Stability Rule
+# 9. Middleware System
+
+### Core Principle
+Middleware exists ONLY to control request flow before reaching handlers.
+
+### Rules
+
+- Middleware must be linear (no branching execution graphs)
+- Middleware receives (ctx, next)
+- next() is the ONLY way to continue execution
+- Middleware must not return values.
+- Use `await next()` to continue execution.
+- Use `return` (without value) to stop execution.
+- Any returned value from middleware is ignored and considered invalid usage.
+- No side-effect APIs are introduced via middleware
+- Middleware must NOT contain business logic that belongs to handlers
+
+### Allowed usage
+
+- Authentication / authorization checks
+- Logging
+- Rate limiting
+- Request preprocessing (e.g. normalization)
+
+### Forbidden usage
+
+- Plugin systems
+- Behavior injection into ctx
+- Overriding handler routing logic
+- Dynamic execution modification beyond next()
+
+### Stability Rule
+
+Any middleware feature that introduces hidden execution paths or non-linear flow is considered a breaking change.
+
+---
+
+# 10. Stability Rule
 
 Any change is breaking if it:
 - changes output for same input
