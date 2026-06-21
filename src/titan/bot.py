@@ -174,7 +174,7 @@ class Titan:
             return
 
         # semantic event aliases — قبل dispatch الرسائل العامة
-        raw_msg = update._message()
+        raw_msg = update.get_message()
         if raw_msg:
             if raw_msg.get("new_chat_members"):
                 await self._dispatch("new_member", ctx)

@@ -40,7 +40,7 @@ class Context:
 
         self.sender = Sender(self.update._user())
         self.chat = Chat(self.update._chat())
-        self.message = Message(self.update._message())
+        self.message = Message(self.update.get_message())
 
         # لا يوجد API call هنا — يتطلب refresh_permissions() صريح
         self.can_delete: bool | None = None
@@ -101,7 +101,7 @@ class Context:
         متاح داخل @bot.on("new_member").
         """
 
-        msg = self.update._message()
+        msg = self.update.get_message()
         if not msg:
             return None
 
@@ -119,7 +119,7 @@ class Context:
                 print(ctx.left_member)  # {"id": 99, "first_name": "Ali", ...}
         """
 
-        msg = self.update._message()
+        msg = self.update.get_message()
         if not msg:
             return None
 

@@ -33,27 +33,27 @@ class Update:
     # Internal helpers  
     # -------------------------  
 
-    def _message(self) -> dict[str, Any] | None:  
-        if self.message:  
-            return self.message  
-        if self.channel_post:  
-            return self.channel_post  
-        if self.callback_query:  
-            return self.callback_query.get("message")  
-        return None  
+    def get_message(self) -> dict[str, Any] | None:
+        if self.message:
+            return self.message
+        if self.channel_post:
+            return self.channel_post
+        if self.callback_query:
+            return self.callback_query.get("message")
+        return None
 
-    def _user(self) -> dict[str, Any] | None:  
-        msg = self._message()  
-        if msg:  
-            return msg.get("from")  
+    def _user(self) -> dict[str, Any] | None:
+        msg = self.get_message()
+        if msg:
+            return msg.get("from")
 
-        if self.callback_query:  
-            return self.callback_query.get("from")  
+        if self.callback_query:
+            return self.callback_query.get("from")
 
-        return None  
+        return None
 
-    def _chat(self) -> dict[str, Any] | None:  
-        msg = self._message()  
+    def _chat(self) -> dict[str, Any] | None:
+        msg = self.get_message()  
         if msg:  
             return msg.get("chat")  
 
