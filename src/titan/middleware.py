@@ -5,19 +5,19 @@ from typing import Awaitable, Callable
 from titan.ctx import Context
 
 
-Middleware = Callable[[Context], Awaitable[bool | None]]
+Next = Callable[[], Awaitable[None]]
+Middleware = Callable[[Context, Next], Awaitable[None]]
 
 
 class MiddlewareChain:
     """
-    سلسلة middleware اختيارية تُنفَّذ قبل كل handler.
+    سلسلة middleware تُنفَّذ قبل كل handler.
 
-    كل middleware تستلم ctx وتقرأ منه فقط.
-    إذا أعادت False → يتوقف الـ update ولا يصل لأي handler.
-    أي قيمة أخرى (True أو None) → يكمل الـ update مساره الطبيعي.
+    كل middleware تستلم ctx وnext.
+    استدعاء next() → يكمل الـ update لبقية الـ middleware ثم الـ handler.
+    عدم استدعاء next() → يتوقف الـ update هنا.
 
-    لا يوجد أي logic أو queries داخل MiddlewareChain نفسها —
-    فقط تنفيذ متسلسل للدوال المسجلة.
+    لا state ولا logic هنا — فقط تنفيذ متسلسل.
     """
 
     def __init__(self) -> None:
@@ -26,9 +26,15 @@ class MiddlewareChain:
     def add(self, fn: Middleware) -> None:
         self._chain.append(fn)
 
-    async def run(self, ctx: Context) -> bool:
-        for fn in self._chain:
-            result = await fn(ctx)
-            if result is False:
-                return False
-        return True
+    async def run(self, ctx: Context, handler: Callable[[], Awaitable[None]]) -> None:
+        async def build(index: int) -> None:
+            if index >= len(self._chain):
+                await handler()
+                return
+
+            async def next_fn() -> None:
+                await build(index + 1)
+
+            await self._chain[index](ctx, next_fn)
+
+        await build(0)

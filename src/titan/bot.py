@@ -115,18 +115,20 @@ class Titan:
             return func
         return decorator
 
-    def use(self, fn: Middleware) -> Middleware:
+    def middleware(self, fn: Middleware) -> Middleware:
         """
         تسجيل middleware تُنفَّذ قبل كل handler.
 
-        تقرأ ctx فقط — لا تعدّل سلوك المكتبة.
-        إذا أعادت False → يتوقف الـ update.
+        كل middleware تستلم ctx وnext.
+        استدعاء next() → يكمل الـ update.
+        عدم استدعاء next() → يتوقف الـ update هنا.
 
         مثال:
-            @bot.use
-            async def check_banned(ctx):
+            @bot.middleware
+            async def guard(ctx, next):
                 if ctx.is_banned:
-                    return False
+                    return
+                await next()
         """
 
         self.middleware_chain.add(fn)
@@ -195,52 +197,51 @@ class Titan:
 
         self.aliases.apply(ctx)
 
-        should_continue = await self.middleware_chain.run(ctx)
-        if not should_continue:
-            return
-
-        # channel
-        if update.channel_post is not None:
-            await self._dispatch("channel", ctx)
-            return
-
-        # callback_query — route by data first, fallback to on("callback")
-        if update.callback_query is not None:
-            data = ctx.callback_data
-            specific = self.callback_handlers.get(data) if data else None
-            if specific is not None:
-                try:
-                    await specific(ctx)
-                except Exception as e:
-                    self.log(f"Callback handler error [{data}]: {e}")
-            else:
-                await self._dispatch("callback", ctx)
-            return
-
-        # semantic event aliases — قبل dispatch الرسائل العامة
-        raw_msg = update.get_message()
-        if raw_msg:
-            if raw_msg.get("new_chat_members"):
-                await self._dispatch("new_member", ctx)
-                return
-            if raw_msg.get("left_chat_member"):
-                await self._dispatch("left_member", ctx)
+        async def dispatch() -> None:
+            # channel
+            if update.channel_post is not None:
+                await self._dispatch("channel", ctx)
                 return
 
-        # message / command
-        text = update.text
-        command = self._extract_command(text) if text else None
-
-        if command is not None:
-            handler = self.commands.get(command)
-            if handler is not None:
-                try:
-                    await handler(ctx)
-                except Exception as e:
-                    self.log(f"Command handler error [{command}]: {e}")
+            # callback_query — route by data first, fallback to on("callback")
+            if update.callback_query is not None:
+                data = ctx.callback_data
+                specific = self.callback_handlers.get(data) if data else None
+                if specific is not None:
+                    try:
+                        await specific(ctx)
+                    except Exception as e:
+                        self.log(f"Callback handler error [{data}]: {e}")
+                else:
+                    await self._dispatch("callback", ctx)
                 return
 
-        await self._dispatch("message", ctx)
+            # semantic event aliases — قبل dispatch الرسائل العامة
+            raw_msg = update.get_message()
+            if raw_msg:
+                if raw_msg.get("new_chat_members"):
+                    await self._dispatch("new_member", ctx)
+                    return
+                if raw_msg.get("left_chat_member"):
+                    await self._dispatch("left_member", ctx)
+                    return
+
+            # message / command
+            text = update.text
+            command = self._extract_command(text) if text else None
+
+            if command is not None:
+                handler = self.commands.get(command)
+                if handler is not None:
+                    try:
+                        await handler(ctx)
+                    except Exception as e:
+                        self.log(f"Command handler error [{command}]: {e}")
+                    return
+
+            await self._dispatch("message", ctx)
+
+        await self.middleware_chain.run(ctx, dispatch)
 
     # -------------------------
     # Runtime

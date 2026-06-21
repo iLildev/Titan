@@ -44,13 +44,11 @@ RAW_NO_USER = {
 
 class TestContextIsBanned:
     def test_is_banned_default_false(self):
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
         assert ctx.is_banned is False
 
     def test_is_banned_is_bool(self):
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
         assert isinstance(ctx.is_banned, bool)
 
 
@@ -126,126 +124,130 @@ class TestBotBannedUsers:
 
 class TestMiddlewareChain:
     @pytest.mark.asyncio
-    async def test_empty_chain_returns_true(self):
+    async def test_empty_chain_calls_handler(self):
         chain = MiddlewareChain()
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        result = await chain.run(ctx)
-        assert result is True
+        called = []
+
+        async def handler():
+            called.append(True)
+
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
+        await chain.run(ctx, handler)
+        assert called == [True]
 
     @pytest.mark.asyncio
-    async def test_middleware_returning_true_continues(self):
+    async def test_middleware_calling_next_continues(self):
         chain = MiddlewareChain()
+        called = []
 
-        async def allow(ctx):
-            return True
+        async def mw(ctx, next):
+            called.append("mw")
+            await next()
 
-        chain.add(allow)
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        result = await chain.run(ctx)
-        assert result is True
+        async def handler():
+            called.append("handler")
+
+        chain.add(mw)
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
+        await chain.run(ctx, handler)
+        assert called == ["mw", "handler"]
 
     @pytest.mark.asyncio
-    async def test_middleware_returning_none_continues(self):
+    async def test_middleware_not_calling_next_stops(self):
         chain = MiddlewareChain()
+        called = []
 
-        async def passthrough(ctx):
-            return None
+        async def mw(ctx, next):
+            called.append("mw")
 
-        chain.add(passthrough)
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        result = await chain.run(ctx)
-        assert result is True
+        async def handler():
+            called.append("handler")
+
+        chain.add(mw)
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
+        await chain.run(ctx, handler)
+        assert called == ["mw"]
 
     @pytest.mark.asyncio
-    async def test_middleware_returning_false_stops(self):
+    async def test_multiple_middleware_all_call_next(self):
         chain = MiddlewareChain()
+        order = []
 
-        async def block(ctx):
-            return False
+        async def m1(ctx, next):
+            order.append(1)
+            await next()
 
-        chain.add(block)
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        result = await chain.run(ctx)
-        assert result is False
+        async def m2(ctx, next):
+            order.append(2)
+            await next()
 
-    @pytest.mark.asyncio
-    async def test_false_stops_remaining_middleware(self):
-        chain = MiddlewareChain()
-        executed = []
-
-        async def first(ctx):
-            executed.append("first")
-            return False
-
-        async def second(ctx):
-            executed.append("second")
-
-        chain.add(first)
-        chain.add(second)
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        await chain.run(ctx)
-        assert executed == ["first"]
-
-    @pytest.mark.asyncio
-    async def test_multiple_middleware_all_pass(self):
-        chain = MiddlewareChain()
-        executed = []
-
-        async def m1(ctx):
-            executed.append(1)
-
-        async def m2(ctx):
-            executed.append(2)
+        async def handler():
+            order.append("handler")
 
         chain.add(m1)
         chain.add(m2)
-        api = MagicMock()
-        ctx = Context(Update(RAW_MESSAGE), api)
-        result = await chain.run(ctx)
-        assert result is True
-        assert executed == [1, 2]
-
-
-class TestBotUse:
-    def test_use_registers_middleware(self):
-        bot = make_bot()
-
-        async def mw(ctx): pass
-
-        bot.use(mw)
-        assert mw in bot.middleware_chain._chain
-
-    def test_use_returns_fn(self):
-        bot = make_bot()
-
-        async def mw(ctx): pass
-
-        result = bot.use(mw)
-        assert result is mw
-
-    def test_use_as_decorator(self):
-        bot = make_bot()
-
-        @bot.use
-        async def mw(ctx): pass
-
-        assert mw in bot.middleware_chain._chain
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
+        await chain.run(ctx, handler)
+        assert order == [1, 2, "handler"]
 
     @pytest.mark.asyncio
-    async def test_middleware_blocks_handler(self):
+    async def test_first_middleware_stops_chain(self):
+        chain = MiddlewareChain()
+        order = []
+
+        async def m1(ctx, next):
+            order.append(1)
+
+        async def m2(ctx, next):
+            order.append(2)
+            await next()
+
+        async def handler():
+            order.append("handler")
+
+        chain.add(m1)
+        chain.add(m2)
+        ctx = Context(Update(RAW_MESSAGE), MagicMock())
+        await chain.run(ctx, handler)
+        assert order == [1]
+
+
+class TestBotMiddleware:
+    def test_middleware_registers(self):
+        bot = make_bot()
+
+        async def guard(ctx, next): pass
+
+        bot.middleware(guard)
+        assert guard in bot.middleware_chain._chain
+
+    def test_middleware_returns_fn(self):
+        bot = make_bot()
+
+        async def guard(ctx, next): pass
+
+        result = bot.middleware(guard)
+        assert result is guard
+
+    def test_middleware_as_decorator(self):
+        bot = make_bot()
+
+        @bot.middleware
+        async def guard(ctx, next): pass
+
+        assert guard in bot.middleware_chain._chain
+
+    @pytest.mark.asyncio
+    async def test_middleware_blocks_banned_user(self):
         bot = make_bot()
         bot.banned_users.add(99)
         called = []
 
-        @bot.use
-        async def check_banned(ctx):
+        @bot.middleware
+        async def guard(ctx, next):
             if ctx.is_banned:
-                return False
+                return
+            await next()
 
         @bot.on("message")
         async def handler(ctx):
@@ -259,10 +261,11 @@ class TestBotUse:
         bot = make_bot()
         called = []
 
-        @bot.use
-        async def check_banned(ctx):
+        @bot.middleware
+        async def guard(ctx, next):
             if ctx.is_banned:
-                return False
+                return
+            await next()
 
         @bot.on("message")
         async def handler(ctx):
@@ -272,7 +275,7 @@ class TestBotUse:
         assert called == [True]
 
     @pytest.mark.asyncio
-    async def test_no_middleware_registered_update_passes(self):
+    async def test_no_middleware_handler_runs(self):
         bot = make_bot()
         called = []
 
