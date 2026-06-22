@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "titan-bot"
+name = "titanx"
 version = "0.1.0"
 description = "A simple and modern framework for building Telegram bots"
 readme = "README.md"
