@@ -23,6 +23,7 @@ from titan.update import Update
 from titan.ctx import Context
 from titan.alias import AliasMap
 from titan.middleware import MiddlewareChain, Middleware
+from titan.adapter import TelegramAdapter
 
 
 Handler = Callable[[Context], Awaitable[Any]]
@@ -47,6 +48,7 @@ class Titan:
 
     def __init__(self, token: str) -> None:
         self.api = Telegram(token)
+        self.telegram = TelegramAdapter(self.api)
 
         self.commands: dict[str, Handler] = {}
         self.handlers: dict[str, list[Handler]] = {}
