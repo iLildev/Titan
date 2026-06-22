@@ -115,7 +115,8 @@ Semantic events must not overlap with message handler.
 # 7. Offset Handling
 
 - external responsibility
-- bot.run(offset=...)
+- bot.run(offset=...) — synchronous entrypoint
+- bot.run_async(offset=...) — async entrypoint (see §0)
 - bot.offset available for persistence
 - on_offset optional hook
 
@@ -163,6 +164,13 @@ Middleware exists ONLY to control request flow before reaching handlers.
 - Behavior injection into ctx
 - Overriding handler routing logic
 - Dynamic execution modification beyond next()
+
+### Ban System
+
+- bot.banned_users — public set[int], managed entirely by the developer
+- ctx.is_banned — bool, set by bot before middleware runs
+- ctx.is_banned is True only when ctx.user_id is in bot.banned_users
+- middleware reads ctx.is_banned — it does not write to it
 
 ### Stability Rule
 
