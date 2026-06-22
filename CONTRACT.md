@@ -6,6 +6,50 @@
 
 ---
 
+# 0. Core Philosophy — Dual Entry (Hands Model)
+
+Titan allows multiple entrypoints for the same capability.
+
+Each entrypoint is valid, supported, and official.
+
+### Principle
+
+- Multiple ways to access the same behavior are allowed.
+- No difference in runtime behavior between entrypoints.
+- Entrypoints differ only in usage style, not in system logic.
+
+### Example
+
+run() and run_async() are both valid entrypoints to the same execution engine.
+
+- run() → synchronous convenience entrypoint
+- run_async() → native async entrypoint
+
+Both execute the same internal logic.
+
+### Alias Consistency Rule
+
+If multiple names exist for the same operation:
+
+- All aliases must map to the same underlying implementation
+- No alias is allowed to introduce new behavior
+- No alias is allowed to bypass system rules
+
+### Design Rule
+
+Titan prioritizes:
+
+- Developer choice of expression
+- Consistent internal behavior
+- Zero duplication of logic paths
+
+NOT:
+
+- Multiple implementations for the same feature
+- Hidden behavioral differences between entrypoints
+
+---
+
 # 1. Public API
 
 الاستيراد المسموح فقط:
