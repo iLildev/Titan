@@ -225,3 +225,25 @@ Instead, Titan focuses on:
 - Consistency
 - Predictability
 - Long-term developer trust
+
+---
+
+# 13. Adapter Layer
+
+bot.telegram provides direct access to the full Telegram Bot API.
+
+### Architecture
+
+- bot.telegram is a TelegramAdapter instance attached to every Titan bot
+- It operates on the same session as the core (no separate connection)
+- It is independent of ctx, middleware, routing, and alias
+
+### Principle
+
+- Adapter exists for capabilities outside the update-response cycle
+- Adapter methods do not go through middleware
+- Adapter does not modify core behavior
+
+### Stability Rule
+
+bot.telegram is a stable public entrypoint. Its presence is guaranteed. Individual method signatures follow Telegram Bot API conventions.
