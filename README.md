@@ -52,6 +52,14 @@ async def handler(ctx):
     ...
 ```
 
+## Commands
+
+```python
+@bot.command("start")
+async def start(ctx):
+    await ctx.reply("Welcome!")
+```
+
 ## Context
 
 Titan provides useful objects directly through `ctx`.
@@ -74,6 +82,36 @@ async def handler(ctx):
     await ctx.reply("Hello")
 ```
 
+## Inline Keyboards
+
+```python
+from titan import Titan, InlineKeyboard, InlineButton
+
+bot = Titan("YOUR_TOKEN")
+
+@bot.on("message")
+async def handler(ctx):
+    keyboard = (
+        InlineKeyboard()
+        .row()
+        .button(InlineButton("Click me", callback_data="clicked"))
+    )
+    await ctx.reply("Choose an option:", reply_markup=keyboard)
+
+@bot.callback("clicked")
+async def on_click(ctx):
+    await ctx.answer_callback("You clicked it!")
+```
+
+## Middleware
+
+```python
+@bot.middleware
+async def logger(ctx, next):
+    print(f"Update from {ctx.user_id}")
+    await next()
+```
+
 ## Philosophy
 
 Titan aims to make bot code describe what is happening instead of exposing Telegram API complexity.
@@ -81,3 +119,7 @@ Titan aims to make bot code describe what is happening instead of exposing Teleg
 Simple things should be simple.
 
 Complex things should remain possible.
+
+## License
+
+MIT
