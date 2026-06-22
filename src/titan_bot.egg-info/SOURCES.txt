@@ -1,10 +1,13 @@
 README.md
 pyproject.toml
 src/titan/__init__.py
+src/titan/adapter.py
+src/titan/alias.py
 src/titan/bot.py
 src/titan/ctx.py
 src/titan/errors.py
 src/titan/keyboard.py
+src/titan/middleware.py
 src/titan/py.typed
 src/titan/telegram.py
 src/titan/update.py
@@ -17,3 +20,12 @@ src/titan_bot.egg-info/SOURCES.txt
 src/titan_bot.egg-info/dependency_links.txt
 src/titan_bot.egg-info/requires.txt
 src/titan_bot.egg-info/top_level.txt
+tests/test_adapter.py
+tests/test_alias.py
+tests/test_bot.py
+tests/test_ctx.py
+tests/test_errors.py
+tests/test_keyboard.py
+tests/test_middleware.py
+tests/test_models.py
+tests/test_update.py
