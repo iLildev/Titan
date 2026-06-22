@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/titan-bot"
-Issues = "https://github.com/your-username/titan-bot/issues"
+Homepage = "https://github.com/WaheedFox/titan-bot"
+Issues = "https://github.com/WaheedFox/titan-bot/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
