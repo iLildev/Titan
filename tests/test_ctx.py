@@ -184,7 +184,7 @@ class TestContextActions:
     @pytest.mark.asyncio
     async def test_edit_raises_outside_callback(self):
         ctx = make_ctx(RAW_MESSAGE)
-        with pytest.raises(TitanError):
+        with pytest.raises(TitanError, match=r"ctx\.edit\(\) requires an active callback_query context"):
             await ctx.edit("oops")
 
     @pytest.mark.asyncio

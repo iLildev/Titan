@@ -64,7 +64,7 @@ class TestHandlerRegistration:
     def test_command_duplicate_raises(self):
         async def h(ctx): pass
         self.bot.command("start")(h)
-        with pytest.raises(TitanError):
+        with pytest.raises(TitanError, match=r"Command 'start' is already registered"):
             self.bot.command("start")(h)
 
     def test_command_returns_func(self):
@@ -80,7 +80,7 @@ class TestHandlerRegistration:
     def test_callback_duplicate_raises(self):
         async def h(ctx): pass
         self.bot.callback("yes")(h)
-        with pytest.raises(TitanError):
+        with pytest.raises(TitanError, match=r"Callback data 'yes' is already registered"):
             self.bot.callback("yes")(h)
 
     def test_callback_returns_func(self):

@@ -40,7 +40,7 @@ class TestAliasMap:
 
     def test_register_invalid_target_raises(self):
         am = AliasMap()
-        with pytest.raises(TitanError):
+        with pytest.raises(TitanError, match=r"does not exist in Context"):
             am.register("foo", "nonexistent_method")
 
     def test_apply_sets_alias_on_ctx(self):
@@ -104,7 +104,7 @@ class TestBotAlias:
         assert self.bot.aliases._map["say"] == "reply"
 
     def test_bot_alias_invalid_raises(self):
-        with pytest.raises(TitanError):
+        with pytest.raises(TitanError, match=r"does not exist in Context"):
             self.bot.alias("foo", "does_not_exist")
 
     @pytest.mark.asyncio
