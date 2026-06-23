@@ -247,3 +247,39 @@ bot.telegram provides direct access to the full Telegram Bot API.
 ### Stability Rule
 
 bot.telegram is a stable public entrypoint. Its presence is guaranteed. Individual method signatures follow Telegram Bot API conventions.
+
+---
+
+# 14. Router
+
+### Purpose
+
+Router is a code organization tool only. It has no runtime behavior of its own.
+
+### API
+
+```python
+router = Router()
+
+@router.on("message")
+@router.command("start")
+@router.callback("yes")
+
+bot.include(router)
+```
+
+### Rules
+
+- Router supports: on(), command(), callback()
+- Router does NOT support: middleware(), alias(), nested include()
+- bot.include(router) transfers all registrations to the bot
+- Duplicate command or callback_data across router and bot → TitanError
+- include() does not modify the router itself
+- Multiple routers can be included into the same bot
+
+### Forbidden
+
+- Nested routers
+- Router middleware
+- Priorities or groups
+- Any routing tree logic

@@ -24,6 +24,7 @@ from titan.ctx import Context
 from titan.alias import AliasMap
 from titan.middleware import MiddlewareChain, Middleware
 from titan.adapter import TelegramAdapter
+from titan.router import Router
 
 
 Handler = Callable[[Context], Awaitable[Any]]
@@ -149,6 +150,37 @@ class Titan:
         """
 
         self.aliases.register(alias, target)
+
+    def include(self, router: Router) -> None:
+        """
+        دمج handlers مسجلة في Router داخل البوت.
+
+        ينقل:
+        - handlers → bot.handlers
+        - commands → bot.commands
+        - callback_handlers → bot.callback_handlers
+
+        يرمي TitanError عند تعارض في command أو callback_data.
+        """
+
+        for event, handlers in router.handlers.items():
+            self.handlers.setdefault(event, []).extend(handlers)
+
+        for name, handler in router.commands.items():
+            if name in self.commands:
+                raise TitanError(
+                    f"Command '{name}' is already registered. "
+                    "Each command can only have one handler."
+                )
+            self.commands[name] = handler
+
+        for data, handler in router.callback_handlers.items():
+            if data in self.callback_handlers:
+                raise TitanError(
+                    f"Callback data '{data}' is already registered. "
+                    "Each callback_data value can only have one handler."
+                )
+            self.callback_handlers[data] = handler
 
     def callback(self, data: str):
         """
