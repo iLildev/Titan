@@ -52,12 +52,18 @@ NOT:
 
 # 1. Public API
 
-الاستيراد المسموح فقط:
+الاستيراد الرسمي المضمون في v1:
 
+```python
 from titan import Titan
+from titan import Router
 from titan import InlineKeyboard
+from titan import InlineButton
 from titan import TitanError
 from titan import TelegramError
+```
+
+أي شيء غير مذكور هنا هو implementation detail وليس جزءاً من الـ contract.
 
 ---
 
