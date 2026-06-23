@@ -44,7 +44,7 @@ class Titan:
     # -------------------------
     # Logging
     # -------------------------
-    def log(self, msg: str) -> None:
+    def _log(self, msg: str) -> None:
         print(f"[Titan] {msg}")
 
     def __init__(self, token: str) -> None:
@@ -219,7 +219,7 @@ class Titan:
             try:
                 await handler(ctx)
             except Exception as e:
-                self.log(f"Handler error [{event}]: {e}")
+                self._log(f"Handler error [{event}]: {e}")
 
     # -------------------------
     # Update handling
@@ -247,7 +247,7 @@ class Titan:
                     try:
                         await specific(ctx)
                     except Exception as e:
-                        self.log(f"Callback handler error [{data}]: {e}")
+                        self._log(f"Callback handler error [{data}]: {e}")
                 else:
                     await self._dispatch("callback", ctx)
                 return
@@ -272,7 +272,7 @@ class Titan:
                     try:
                         await handler(ctx)
                     except Exception as e:
-                        self.log(f"Command handler error [{command}]: {e}")
+                        self._log(f"Command handler error [{command}]: {e}")
                     return
 
             await self._dispatch("message", ctx)
@@ -290,12 +290,12 @@ class Titan:
     ) -> None:
         self.offset = offset
         await self.api.start()
-        self.log("Bot started")
+        self._log("Bot started")
 
         try:
             me = await self.api.get_me()
             username = me.get("username", "unknown")
-            self.log(f"Running as @{username}")
+            self._log(f"Running as @{username}")
         except Exception:
             pass
 
@@ -313,13 +313,13 @@ class Titan:
                     for raw in updates:
                         update_id = raw.get("update_id")
                         if update_id is None:
-                            self.log(f"Skipping update with no update_id: {raw}")
+                            self._log(f"Skipping update with no update_id: {raw}")
                             continue
 
                         self.offset = update_id
 
                         if debug:
-                            self.log(f"update received: {raw}")
+                            self._log(f"update received: {raw}")
 
                         await self._handle_update(raw)
 
@@ -331,11 +331,11 @@ class Titan:
                         backoff * 2 if backoff else _BACKOFF_BASE,
                         _BACKOFF_MAX,
                     )
-                    self.log(f"Polling error: {e}. Retrying in {backoff:.0f}s...")
+                    self._log(f"Polling error: {e}. Retrying in {backoff:.0f}s...")
                     await asyncio.sleep(backoff)
 
         finally:
-            self.log("Bot stopped")
+            self._log("Bot stopped")
             await self.api.close()
 
     # -------------------------
