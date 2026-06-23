@@ -77,7 +77,9 @@ Allowed actions:
 - edit() (callback only)
 - delete_message()
 - ban_user()
+- leave()
 - answer_callback()
+- refresh_permissions()
 
 Rules:
 - لا وصول مباشر لـ Telegram API

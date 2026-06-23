@@ -238,14 +238,6 @@ class TestContextActions:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_member_calls_api(self):
-        api = MagicMock()
-        api.get_chat_member = AsyncMock(return_value={"ok": True, "result": {}})
-        ctx = make_ctx(RAW_MESSAGE, api=api)
-        await ctx.get_member(77)
-        api.get_chat_member.assert_called_once_with(chat_id=200, user_id=77)
-
-    @pytest.mark.asyncio
     async def test_refresh_permissions_sets_can_delete(self):
         api = MagicMock()
         api.get_me = AsyncMock(return_value={"id": 1})
@@ -302,9 +294,3 @@ class TestContextNullSafety:
         result = await ctx.leave()
         assert result is None
 
-    @pytest.mark.asyncio
-    async def test_get_member_returns_none_when_no_chat_id(self):
-        raw = {"update_id": 1}
-        ctx = make_ctx(raw)
-        result = await ctx.get_member(5)
-        assert result is None

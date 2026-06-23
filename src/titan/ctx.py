@@ -296,18 +296,6 @@ class Context:
 
         return await self._api.leave_chat(chat_id=chat_id)
 
-    async def get_member(self, user_id: int) -> Any:
-        """جلب معلومات عضو في الشات الحالي."""
-
-        chat_id = self.chat_id
-        if chat_id is None:
-            return None
-
-        return await self._api.get_chat_member(
-            chat_id=chat_id,
-            user_id=user_id,
-        )
-
     async def answer_callback(
         self,
         text: str | None = None,
