@@ -112,6 +112,35 @@ async def logger(ctx, next):
     await next()
 ```
 
+## Router
+
+Router lets you split handlers across multiple files and include them into the bot.
+
+```python
+# admin.py
+from titan import Router
+
+router = Router()
+
+@router.command("ban")
+async def ban(ctx):
+    await ctx.reply("Banned.")
+
+@router.callback("confirm_ban")
+async def confirm(ctx):
+    await ctx.answer_callback()
+```
+
+```python
+# main.py
+from titan import Titan
+from admin import router
+
+bot = Titan("YOUR_TOKEN")
+bot.include(router)
+bot.run()
+```
+
 ## Philosophy
 
 Titan aims to make bot code describe what is happening instead of exposing Telegram API complexity.
