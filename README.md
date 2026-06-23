@@ -103,6 +103,22 @@ async def on_click(ctx):
     await ctx.answer_callback("You clicked it!")
 ```
 
+## Aliases
+
+Aliases let you define custom names for `ctx` methods within your own bot:
+
+```python
+bot.alias("say", "reply")
+bot.alias("kick", "ban_user")
+
+@bot.on("message")
+async def handler(ctx):
+    await ctx.say("Hello")   # same as ctx.reply()
+    await ctx.kick()         # same as ctx.ban_user()
+```
+
+The original method names remain available and unchanged. Aliases are optional — a bot that doesn't use them is not affected.
+
 ## Middleware
 
 ```python

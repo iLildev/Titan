@@ -35,12 +35,14 @@ class Context:
     """
 
     def __init__(self, update: Update, api: Telegram) -> None:
-        self.update = update
+        self._update = update
         self._api = api
 
-        self.sender = Sender(self.update._user())
-        self.chat = Chat(self.update._chat())
-        self.message = Message(self.update.get_message())
+        self.raw: dict = update.raw
+
+        self.sender = Sender(self._update._user())
+        self.chat = Chat(self._update._chat())
+        self.message = Message(self._update.get_message())
 
         # لا يوجد API call هنا — يتطلب refresh_permissions() صريح
         self.can_delete: bool | None = None
@@ -54,23 +56,23 @@ class Context:
 
     @property
     def text(self) -> str | None:
-        return self.update.text
+        return self._update.text
 
     @property
     def user_id(self) -> int | None:
-        return self.update.user_id
+        return self._update.user_id
 
     @property
     def chat_id(self) -> int | None:
-        return self.update.chat_id
+        return self._update.chat_id
 
     @property
     def username(self) -> str | None:
-        return self.update.username
+        return self._update.username
 
     @property
     def message_id(self) -> int | None:
-        return self.update.message_id
+        return self._update.message_id
 
     @property
     def callback_data(self) -> str | None:
@@ -78,7 +80,7 @@ class Context:
         بيانات الزر المضغوط في callback_query.
         """
 
-        cb = self.update.callback_query
+        cb = self._update.callback_query
         if not cb:
             return None
 
@@ -91,7 +93,7 @@ class Context:
         مطلوب لـ answer_callback.
         """
 
-        cb = self.update.callback_query
+        cb = self._update.callback_query
         if not cb:
             return None
 
@@ -104,7 +106,7 @@ class Context:
         متاح داخل @bot.on("new_member").
         """
 
-        msg = self.update.get_message()
+        msg = self._update.get_message()
         if not msg:
             return None
 
@@ -122,7 +124,7 @@ class Context:
                 print(ctx.left_member)  # {"id": 99, "first_name": "Ali", ...}
         """
 
-        msg = self.update.get_message()
+        msg = self._update.get_message()
         if not msg:
             return None
 
@@ -206,7 +208,7 @@ class Context:
         return value من ctx.send() — سيُدعم في نسخة قادمة.
         """
 
-        if self.update.callback_query is None:
+        if self._update.callback_query is None:
             raise TitanError(
                 "ctx.edit() requires an active callback_query context. "
                 "It can only be called inside @bot.on('callback') or @bot.callback('data') handlers. "
@@ -284,11 +286,6 @@ class Context:
             self.can_delete = result.get("can_delete_messages", False)
         except Exception:
             self.can_delete = False
-
-    async def ban(self, user_id: int | None = None) -> Any:
-        """اختصار لـ ban_user."""
-
-        return await self.ban_user(user_id)
 
     async def leave(self) -> Any:
         """مغادرة الشات الحالي."""

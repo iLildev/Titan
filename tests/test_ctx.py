@@ -212,14 +212,6 @@ class TestContextActions:
         api.ban_user.assert_called_once_with(chat_id=200, user_id=42)
 
     @pytest.mark.asyncio
-    async def test_ban_shortcut(self):
-        api = MagicMock()
-        api.ban_user = AsyncMock(return_value={"ok": True})
-        ctx = make_ctx(RAW_MESSAGE, api=api)
-        await ctx.ban()
-        api.ban_user.assert_called_once()
-
-    @pytest.mark.asyncio
     async def test_leave_calls_api(self):
         api = MagicMock()
         api.leave_chat = AsyncMock(return_value={"ok": True})

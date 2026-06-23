@@ -83,6 +83,13 @@ Rules:
 - لا وصول مباشر لـ Telegram API
 - Message / Update / Chat / Sender = data-only
 
+### ctx.raw — Escape Hatch
+
+- ctx.raw يكشف raw JSON الكامل القادم من Telegram
+- ليس جزءاً من frozen contract — بنيته قد تتغير
+- استخدمه فقط عند الحاجة لبيانات غير متاحة عبر ctx مباشرة
+- لا تبني منطقاً دائماً يعتمد على ctx.raw
+
 ---
 
 # 4. Event System

@@ -18,7 +18,10 @@ class InlineButton:
     """
     زر واحد داخل InlineKeyboard.
 
-    تفصيل داخلي — يُبنى عبر InlineKeyboard.button() مباشرة.
+    المعاملات:
+    - text: نص الزر
+    - callback_data: البيانات التي تُرسل عند الضغط (لـ @bot.callback)
+    - url: رابط يُفتح عند الضغط
     """
 
     def __init__(
