@@ -1,6 +1,9 @@
 # ﷽
-# Titan — كتبه @WaheedFox عن سابق إصرار وترصّد 🤡
-# github.com/WaheedFox | t.me/WaheedFox
+#
+# © Copyright by Waheed. All rights reserved.
+# Alien's Zone ~ building real robots to help humanity thrive and stay alive! ^^
+#
+# @WaheedFox | github.com/WaheedFox | t.me/WaheedFox
 
 from titan.bot import Titan
 from titan.errors import TitanError
