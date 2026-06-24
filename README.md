@@ -1,12 +1,14 @@
 # Titan
 
-A minimal async Python framework for building Telegram bots.
+إطار عمل Python غير متزامن لبناء بوتات Telegram.
 
-Titan gives you clean events, readable code, and a stable API that does not change under your feet.
+بسيط. واضح. لا يتغير تحت قدميك.
+
+> 🌐 [English version → README.en.md](README.en.md)
 
 ---
 
-## Installation
+## التثبيت
 
 ```bash
 pip install titanx
@@ -14,7 +16,7 @@ pip install titanx
 
 ---
 
-## Quick Start
+## البداية السريعة
 
 ```python
 from titan import Titan
@@ -23,33 +25,31 @@ bot = Titan("YOUR_TOKEN")
 
 @bot.command("start")
 async def start(ctx):
-    await ctx.reply("Hello! I am ready.")
+    await ctx.reply("أهلاً! أنا جاهز.")
 
 bot.run()
 ```
 
 ---
 
-## Core Concepts
+## المفاهيم الأساسية
 
-Titan exposes five ways to interact with your bot. Each has a distinct role.
+Titan توفر خمس طرق للتفاعل مع بوتك. كل طريقة لها دور محدد.
 
-| Method | Role |
+| الطريقة | الدور |
 |---|---|
-| `bot.on(event)` | Handle raw Telegram events by name |
-| `bot.command(name)` | Handle a specific `/command` |
-| `bot.callback(data)` | Handle a specific inline button press |
-| `bot.middleware` | Run logic before every handler |
-| `bot.telegram` | Call Telegram API methods directly |
+| `bot.on(event)` | استقبال أي حدث Telegram بالاسم |
+| `bot.command(name)` | استقبال أمر محدد مثل `/start` |
+| `bot.callback(data)` | استقبال ضغطة زر inline محددة |
+| `bot.middleware` | تشغيل منطق قبل كل handler |
+| `bot.telegram` | استدعاء Telegram API مباشرة |
 
-### `bot.on` — Raw Event Handler
-
-Responds to any Telegram update event by name.
+### `bot.on` — استقبال الأحداث
 
 ```python
 @bot.on("message")
 async def on_message(ctx):
-    await ctx.reply("Got your message.")
+    await ctx.reply("وصلتني رسالتك.")
 
 @bot.on("callback")
 async def on_callback(ctx):
@@ -57,112 +57,107 @@ async def on_callback(ctx):
 
 @bot.on("channel")
 async def on_channel(ctx):
-    pass  # channel posts
+    pass  # منشورات القناة
 ```
 
-Supported events: `message`, `callback`, `channel`, `new_member`, `left_member`.
+الأحداث المدعومة: `message`، `callback`، `channel`، `new_member`، `left_member`.
 
-### `bot.command` — Command Handler
-
-Matches a specific `/command` from the user. Shorthand for a message handler that filters by command text.
+### `bot.command` — استقبال الأوامر
 
 ```python
 @bot.command("start")
 async def start(ctx):
-    await ctx.reply("Welcome!")
+    await ctx.reply("مرحباً!")
 
 @bot.command("help")
 async def help(ctx):
-    await ctx.reply("Send any message to begin.")
+    await ctx.reply("أرسل أي رسالة للبدء.")
 ```
 
-### `bot.callback` — Inline Button Handler
-
-Matches a specific `callback_data` value from an inline keyboard press.
+### `bot.callback` — استقبال أزرار Inline
 
 ```python
 @bot.callback("confirm")
 async def on_confirm(ctx):
-    await ctx.answer_callback("Confirmed.")
+    await ctx.answer_callback("تم التأكيد.")
 
 @bot.callback("cancel")
 async def on_cancel(ctx):
-    await ctx.answer_callback("Cancelled.")
+    await ctx.answer_callback("تم الإلغاء.")
 ```
 
-If no matching `bot.callback` exists, the update falls through to `bot.on("callback")`.
+إذا لم يوجد handler مطابق لـ `callback_data`، يُحوَّل التحديث إلى `bot.on("callback")`.
 
-### `bot.middleware` — Pre-Handler Logic
+### `bot.middleware` — منطق ما قبل التنفيذ
 
-Runs before every handler. Use it for logging, auth checks, and rate limiting.
+يعمل قبل كل handler. استخدمه للـ logging، التحقق من الصلاحيات، ومنع الـ spam.
 
 ```python
 @bot.middleware
-async def logger(ctx, next):
-    print(f"Update from user {ctx.user_id}")
+async def guard(ctx, next):
+    print(f"تحديث من المستخدم {ctx.user_id}")
     await next()
 ```
 
-- Call `await next()` to continue to the handler.
-- Return without calling `next()` to stop execution.
-- Middleware must not contain business logic that belongs in handlers.
+- `await next()` ← يكمل التنفيذ للـ handler
+- `return` بدون استدعاء `next()` ← يوقف التحديث هنا
 
-### `bot.telegram` — Direct API Access
+### `bot.telegram` — الوصول المباشر للـ API
 
-A direct adapter to the full Telegram Bot API. Use it for operations outside the normal update-response cycle.
+للعمليات خارج سياق الرسالة الواحدة.
 
 ```python
-await bot.telegram.send_message(chat_id=123, text="Hello from outside a handler.")
+await bot.telegram.send_message(chat_id=123, text="رسالة مباشرة.")
 await bot.telegram.get_chat_member(chat_id=123, user_id=456)
 await bot.telegram.pin_message(chat_id=123, message_id=789)
 ```
 
-`bot.telegram` bypasses middleware and ctx. It is for explicit, direct API calls only.
+`bot.telegram` يتجاوز الـ middleware والـ ctx — للاستدعاء المباشر والصريح فقط.
 
 ---
 
-## Context (`ctx`)
+## السياق (`ctx`)
 
-Every handler receives a `ctx` object. It carries the current update's data and the allowed actions.
+كل handler يستلم كائن `ctx` يحمل بيانات التحديث الحالي وأدوات التفاعل.
 
-### Data Properties
+### البيانات
 
 ```python
-ctx.user_id        # int | None — Telegram user ID
-ctx.chat_id        # int | None — chat ID
-ctx.text           # str | None — message text
-ctx.callback_data  # str | None — callback_data from inline button
-ctx.is_banned      # bool — whether user_id is in bot.banned_users
+ctx.user_id        # int | None — معرّف المستخدم
+ctx.chat_id        # int | None — معرّف الشات
+ctx.text           # str | None — نص الرسالة
+ctx.callback_data  # str | None — بيانات الزر المضغوط
+ctx.is_banned      # bool — هل المستخدم في قائمة الحظر
 
-ctx.sender         # Sender object: .id, .first_name, .username, .is_bot
-ctx.chat           # Chat object: .id, .type, .title, .username
-ctx.message        # Message object: .id, .text, .date
+ctx.sender         # بيانات المرسل: .id, .first_name, .username, .is_bot
+ctx.chat           # بيانات الشات: .id, .type, .title, .username
+ctx.message        # بيانات الرسالة: .id, .text
 ```
 
-### Actions
+### الأفعال
 
 ```python
-await ctx.reply("Hello")
-await ctx.send(chat_id, "Hello")
-await ctx.edit("Updated text")          # callback handlers only
+await ctx.reply("مرحباً")
+await ctx.send(chat_id, "مرحباً")
+await ctx.edit("نص محدّث")        # داخل callback handlers فقط
 await ctx.delete_message()
 await ctx.ban_user()
 await ctx.leave()
-await ctx.answer_callback("Done")
-await ctx.refresh_permissions()         # checks bot's delete permission in this chat
+await ctx.answer_callback("تم")
+await ctx.refresh_permissions()   # يفحص صلاحية البوت في الشات
 ```
 
-### Escape Hatch
+### الوصول الخام
 
 ```python
-ctx.raw  # full raw Telegram JSON dict for this update
+ctx.raw  # JSON الكامل القادم من Telegram
 ```
 
-`ctx.raw` is not part of the frozen contract. Its structure follows Telegram's API and may change. Use it only when `ctx` does not expose what you need.
+`ctx.raw` ليس جزءاً من العقد المجمّد — بنيته تتبع Telegram API وقد تتغير. استخدمه فقط عند الحاجة.
 
 ---
 
-## Inline Keyboards
+## أزرار Inline
 
 ```python
 from titan import Titan, InlineKeyboard, InlineButton
@@ -174,18 +169,18 @@ async def start(ctx):
     keyboard = (
         InlineKeyboard()
         .row()
-        .button(InlineButton("Yes", callback_data="confirm"))
-        .button(InlineButton("No", callback_data="cancel"))
+        .button(InlineButton("نعم ✅", callback_data="confirm"))
+        .button(InlineButton("لا ❌", callback_data="cancel"))
     )
-    await ctx.reply("Are you sure?", reply_markup=keyboard)
+    await ctx.reply("هل أنت متأكد؟", reply_markup=keyboard)
 
 @bot.callback("confirm")
 async def on_confirm(ctx):
-    await ctx.answer_callback("Confirmed!")
+    await ctx.answer_callback("تم التأكيد!")
 
 @bot.callback("cancel")
 async def on_cancel(ctx):
-    await ctx.answer_callback("Cancelled.")
+    await ctx.answer_callback("تم الإلغاء.")
 
 bot.run()
 ```
@@ -194,7 +189,7 @@ bot.run()
 
 ## Router
 
-Router lets you split handlers across multiple files, then include them into the main bot.
+يتيح لك تقسيم الـ handlers عبر ملفات متعددة ودمجها في البوت الرئيسي.
 
 ```python
 # admin.py
@@ -205,7 +200,7 @@ router = Router()
 @router.command("ban")
 async def ban(ctx):
     await ctx.ban_user()
-    await ctx.reply("Done.")
+    await ctx.reply("تم الحظر.")
 
 @router.callback("confirm_ban")
 async def confirm_ban(ctx):
@@ -222,40 +217,40 @@ bot.include(router)
 bot.run()
 ```
 
-Router supports: `on()`, `command()`, `callback()`.
+Router يدعم: `on()`، `command()`، `callback()`.
 
-Router does **not** support: `middleware()`, `alias()`, nested `include()`.
+Router لا يدعم: `middleware()`، `alias()`، أو `include()` المتداخل.
 
 ---
 
-## Aliases
+## الأسماء البديلة (Aliases)
 
-`bot.alias()` lets you define custom names for `ctx` methods within your own project.
+تتيح لك تعريف أسماء مخصصة لـ methods الـ ctx داخل مشروعك.
 
 ```python
-bot.alias("say", "reply")
-bot.alias("kick", "ban_user")
+bot.alias("قل", "reply")
+bot.alias("اطرد", "ban_user")
 
 @bot.on("message")
 async def handler(ctx):
-    await ctx.say("Hello")  # same as ctx.reply()
-    await ctx.kick()        # same as ctx.ban_user()
+    await ctx.قل("مرحباً")   # نفس ctx.reply()
+    await ctx.اطرد()          # نفس ctx.ban_user()
 ```
 
-The original method names remain available. Aliases are a naming layer only — they do not change behavior.
+الاسم الأصلي يبقى متاحاً بدون أي تغيير. Aliases طبقة تسمية فقط — لا تغير في السلوك.
 
 ---
 
-## Ban System
+## نظام الحظر
 
 ```python
-bot.banned_users  # set[int] — managed entirely by you
+bot.banned_users  # set[int] — تديرها أنت بالكامل
 
 bot.banned_users.add(user_id)
 bot.banned_users.discard(user_id)
 ```
 
-When a user is in `bot.banned_users`, `ctx.is_banned` is `True` before middleware runs. Titan does not act on this automatically — your middleware decides what to do.
+عندما يكون المستخدم في `bot.banned_users`، تكون `ctx.is_banned` قيمتها `True` قبل تشغيل الـ middleware. Titan لا تتصرف تلقائياً — الـ middleware تقرر ماذا تفعل.
 
 ```python
 @bot.middleware
@@ -267,32 +262,32 @@ async def guard(ctx, next):
 
 ---
 
-## Running the Bot
+## تشغيل البوت
 
 ```python
-# Synchronous (recommended for most cases)
+# متزامن — الأنسب في أغلب الحالات
 bot.run()
 
-# Async (when you manage your own event loop)
+# غير متزامن — عندما تُدير event loop خاص بك
 import asyncio
 asyncio.run(bot.run_async())
 ```
 
-Both entrypoints execute the same internal logic.
+كلا الأسلوبين ينفّذان نفس المنطق الداخلي.
 
 ---
 
-## Philosophy
+## الفلسفة
 
-Titan is a stability-driven framework.
+Titan إطار عمل مبني على الاستقرار.
 
-- Simple things are simple.
-- Complex things remain possible via `bot.telegram`.
-- The public API does not change without a version bump.
-- No hidden behavior. No magic. No feature race.
+- الأشياء البسيطة تبقى بسيطة.
+- الأشياء المعقدة ممكنة عبر `bot.telegram`.
+- الـ API لا يتغير بدون إصدار جديد.
+- لا سلوك خفي. لا magic. لا سباق ميزات.
 
 ---
 
-## License
+## الرخصة
 
 MIT
