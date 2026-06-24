@@ -33,6 +33,38 @@ class TelegramAdapter:
         self._api = api
 
     # -------------------------
+    # Messaging
+    # -------------------------
+
+    async def send_message(
+        self,
+        chat_id: int,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any | None = None,
+    ) -> dict[str, Any]:
+        """إرسال رسالة نصية لأي شات."""
+
+        return await self._api.send_message(
+            chat_id=chat_id,
+            text=text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+        )
+
+    async def get_chat_member(
+        self,
+        chat_id: int,
+        user_id: int,
+    ) -> dict[str, Any]:
+        """جلب معلومات عضو في الشات."""
+
+        return await self._api.get_chat_member(
+            chat_id=chat_id,
+            user_id=user_id,
+        )
+
+    # -------------------------
     # Media
     # -------------------------
 

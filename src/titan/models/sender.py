@@ -44,6 +44,10 @@ class Sender:
     def last_name(self) -> str | None:
         return self.raw.get("last_name")
 
+    @property
+    def is_bot(self) -> bool:
+        return self.raw.get("is_bot", False)
+
     # -------------------------
     # Export
     # -------------------------

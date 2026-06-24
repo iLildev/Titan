@@ -114,7 +114,7 @@ A direct adapter to the full Telegram Bot API. Use it for operations outside the
 ```python
 await bot.telegram.send_message(chat_id=123, text="Hello from outside a handler.")
 await bot.telegram.get_chat_member(chat_id=123, user_id=456)
-await bot.telegram.pin_chat_message(chat_id=123, message_id=789)
+await bot.telegram.pin_message(chat_id=123, message_id=789)
 ```
 
 `bot.telegram` bypasses middleware and ctx. It is for explicit, direct API calls only.

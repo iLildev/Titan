@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "titanx"
-version = "0.1.0"
+version = "1.0.0"
 description = "A simple and modern framework for building Telegram bots"
 readme = "README.md"
 license = { text = "MIT" }
@@ -13,6 +13,10 @@ keywords = ["telegram", "bot", "framework", "async"]
 
 dependencies = [
     "aiohttp>=3.9",
+]
+
+[project.optional-dependencies]
+dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
