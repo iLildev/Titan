@@ -1,3 +1,4 @@
+# ﷽
 class TitanError(Exception):  
     """  
     الخطأ الأساسي داخل Titan.  

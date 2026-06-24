@@ -1,3 +1,7 @@
+# ﷽
+# Titan — Built by Waheed (@WaheedFox)
+# All rights are saved from Waheed 🤡
+
 from titan.bot import Titan
 from titan.errors import TitanError
 from titan.telegram import TelegramError

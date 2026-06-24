@@ -4,6 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "titanx"
+authors = [
+    {name = "Waheed", email = "waheedfox@proton.me"},
+]
 version = "1.0.0"
 description = "A simple and modern framework for building Telegram bots"
 readme = "README.md"
