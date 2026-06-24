@@ -294,5 +294,5 @@ MIT
 
 ---
 
-© Copyright by Waheed. All rights reserved.
-*Alien's Zone ~ building real robots to help humanity thrive and stay alive! ^^*
+© Copyright by **Waheed**. All rights reserved.
+*(Alien's Zone ~ building real robots to help humanity thrive and stay alive! ^^)*
