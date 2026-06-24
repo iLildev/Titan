@@ -291,7 +291,8 @@ Titan is a stability-driven framework.
 
 ## License
 
-MIT
+**W.A.S.L v1.0** — Waheed Accessible Source License
+See [LICENSE](LICENSE) for full terms.
 
 ---
 
