@@ -1,6 +1,6 @@
 # ﷽
-# Titan — Built by Waheed (@WaheedFox)
-# All rights are saved from Waheed 🤡
+# Titan — كتبه @WaheedFox عن سابق إصرار وترصّد 🤡
+# github.com/WaheedFox | t.me/WaheedFox
 
 from titan.bot import Titan
 from titan.errors import TitanError
