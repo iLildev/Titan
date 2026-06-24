@@ -2,9 +2,9 @@
 
 A minimal async Python framework for building Telegram bots.
 
-Simple. Clear. Stable.
+Titan gives you clean events, readable code, and a stable API that does not change under your feet.
 
-> 🇸🇦 [النسخة العربية ← README.md](README.md)
+> 🇸🇦 [Arabic version ← README.md](README.md)
 
 ---
 
@@ -99,8 +99,9 @@ async def logger(ctx, next):
     await next()
 ```
 
-- `await next()` → continue to the handler
-- `return` without calling `next()` → stop execution here
+- Call `await next()` to continue to the handler.
+- Return without calling `next()` to stop execution.
+- Middleware must not contain business logic that belongs in handlers.
 
 ### `bot.telegram` — Direct API Access
 
